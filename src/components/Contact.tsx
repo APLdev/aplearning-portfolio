@@ -124,7 +124,9 @@ export function Contact() {
               {state.status === "error" && (
                 <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
                   <p className="text-sm font-medium text-red-500">{t.contact.formErrorTitle}</p>
-                  <p className="mt-1 text-sm text-muted">{t.contact.formErrorBody}</p>
+                  <p className="mt-1 text-sm text-muted">
+                    {state.message ?? t.contact.formErrorBody}
+                  </p>
                 </div>
               )}
               <div className="grid gap-5 sm:grid-cols-2">

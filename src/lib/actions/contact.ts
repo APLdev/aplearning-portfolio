@@ -2,6 +2,7 @@
 
 export type ContactFormState = {
   status: "idle" | "success" | "error";
+  message?: string;
 };
 
 export async function submitContactForm(
@@ -12,7 +13,10 @@ export async function submitContactForm(
 
   if (!accessKey) {
     console.error("WEB3FORMS_ACCESS_KEY is not set");
-    return { status: "error" };
+    return {
+      status: "error",
+      message: "La configuración de envío no está disponible. Intenta nuevamente en unos minutos.",
+    };
   }
 
   const payload = {
@@ -32,10 +36,29 @@ export async function submitContactForm(
       body: JSON.stringify(payload),
     });
 
-    const result = await response.json();
-    return { status: result.success ? "success" : "error" };
+    const result = (await response.json()) as {
+      success?: boolean;
+      message?: string;
+      body?: { message?: string };
+    };
+
+    if (response.ok && result.success) {
+      return { status: "success" };
+    }
+
+    console.error("Web3Forms rejected submission", { status: response.status, result });
+    return {
+      status: "error",
+      message:
+        result.message ??
+        result.body?.message ??
+        "El servicio de envío rechazó la solicitud. Intenta nuevamente.",
+    };
   } catch (error) {
     console.error("Web3Forms submission failed", error);
-    return { status: "error" };
+    return {
+      status: "error",
+      message: "No se pudo conectar con el servicio de envío. Intenta nuevamente.",
+    };
   }
 }
