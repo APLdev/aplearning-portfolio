@@ -158,11 +158,14 @@ export const es = {
     formMessage: "Cuéntame sobre tu proyecto",
     formSubmit: "Solicitar cotización",
     formSuccessTitle: "¡Gracias!",
-    formSuccessBody:
-      "Este formulario es una vista previa de diseño. Conéctalo a tu servicio de envío preferido (por ejemplo, Formspree o un endpoint propio) para empezar a recibir solicitudes reales.",
+    formSuccessBody: "Recibí tu mensaje y te responderé en menos de 24 horas hábiles.",
+    formErrorTitle: "Algo salió mal",
+    formErrorBody: "No se pudo enviar el formulario. Intenta de nuevo o escríbeme directamente por correo o WhatsApp.",
+    formSubmitting: "Enviando...",
     orLabel: "o escríbeme directamente",
     emailLabel: "Correo",
     linkedinLabel: "LinkedIn",
+    whatsappLabel: "WhatsApp",
   },
   footer: {
     rights: "Todos los derechos reservados.",
@@ -332,11 +335,14 @@ export const en: Dictionary = {
     formMessage: "Tell me about your project",
     formSubmit: "Request a quote",
     formSuccessTitle: "Thank you!",
-    formSuccessBody:
-      "This form is a design preview. Connect it to your preferred form service (e.g. Formspree or your own endpoint) to start receiving real requests.",
+    formSuccessBody: "I've received your message and will reply within 24 business hours.",
+    formErrorTitle: "Something went wrong",
+    formErrorBody: "The form couldn't be sent. Please try again or reach out directly via email or WhatsApp.",
+    formSubmitting: "Sending...",
     orLabel: "or write to me directly",
     emailLabel: "Email",
     linkedinLabel: "LinkedIn",
+    whatsappLabel: "WhatsApp",
   },
   footer: {
     rights: "All rights reserved.",

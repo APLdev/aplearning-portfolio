@@ -1,20 +1,30 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { CONTACT_EMAIL, LINKEDIN_URL, LINKEDIN_DISPLAY } from "@/lib/data/contact";
+import { CONTACT_EMAIL, LINKEDIN_URL, LINKEDIN_DISPLAY, WHATSAPP_URL, WHATSAPP_DISPLAY } from "@/lib/data/contact";
+import { submitContactForm, type ContactFormState } from "@/lib/actions/contact";
+
+const initialState: ContactFormState = { status: "idle" };
+
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full rounded-full bg-accent px-6 py-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {pending ? pendingLabel : label}
+    </button>
+  );
+}
 
 export function Contact() {
   const { t } = useLanguage();
-  const [submitted, setSubmitted] = useState(false);
-
-  // Placeholder handler: no data is sent anywhere yet.
-  // Wire this to Formspree, Web3Forms, or your own API route before launch.
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setSubmitted(true);
-  }
+  const [state, formAction] = useActionState(submitContactForm, initialState);
 
   return (
     <section id="contacto" className="py-20 sm:py-24">
@@ -61,6 +71,32 @@ export function Contact() {
                 {LINKEDIN_DISPLAY}
               </span>
             </a>
+
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 text-sm font-medium transition-colors hover:text-accent"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-soft text-accent">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 3a9 9 0 0 0-7.65 13.72L3 21l4.4-1.32A9 9 0 1 0 12 3z"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M8.5 8.8c.15-.6.75-1 1.35-1h.5c.3 0 .55.2.6.5l.4 1.8c.05.2 0 .45-.15.6l-.6.6c.35.9 1.2 1.75 2.1 2.1l.6-.6c.15-.15.4-.2.6-.15l1.8.4c.3.05.5.3.5.6v.5c0 .6-.4 1.2-1 1.35-2.6.6-6.1-2.9-6.7-5.5-.1-.4-.1-.8 0-1.2z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <span>
+                <span className="block text-xs text-muted">{t.contact.whatsappLabel}</span>
+                {WHATSAPP_DISPLAY}
+              </span>
+            </a>
           </div>
         </div>
 
@@ -71,7 +107,7 @@ export function Contact() {
           transition={{ duration: 0.5 }}
           className="rounded-2xl border border-border bg-surface/50 p-7 sm:p-8"
         >
-          {submitted ? (
+          {state.status === "success" ? (
             <div className="flex flex-col items-start gap-3 py-6">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft text-accent">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -84,7 +120,13 @@ export function Contact() {
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form action={formAction} className="space-y-5">
+              {state.status === "error" && (
+                <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
+                  <p className="text-sm font-medium text-red-500">{t.contact.formErrorTitle}</p>
+                  <p className="mt-1 text-sm text-muted">{t.contact.formErrorBody}</p>
+                </div>
+              )}
               <div className="grid gap-5 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-1.5 block text-xs font-medium text-muted">
@@ -130,12 +172,7 @@ export function Contact() {
                   className="w-full resize-none rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-accent"
                 />
               </label>
-              <button
-                type="submit"
-                className="w-full rounded-full bg-accent px-6 py-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
-              >
-                {t.contact.formSubmit}
-              </button>
+              <SubmitButton label={t.contact.formSubmit} pendingLabel={t.contact.formSubmitting} />
             </form>
           )}
         </motion.div>
