@@ -1,16 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
+import { type FormEvent, useState } from "react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { CONTACT_EMAIL, LINKEDIN_URL, LINKEDIN_DISPLAY, WHATSAPP_URL, WHATSAPP_DISPLAY } from "@/lib/data/contact";
-import { submitContactForm, type ContactFormState } from "@/lib/actions/contact";
 
-const initialState: ContactFormState = { status: "idle" };
+type ContactFormState = {
+  status: "idle" | "success" | "error";
+  message?: string;
+};
 
-function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
-  const { pending } = useFormStatus();
+function SubmitButton({ label, pendingLabel, pending }: { label: string; pendingLabel: string; pending: boolean }) {
   return (
     <button
       type="submit"
@@ -24,7 +24,58 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
 
 export function Contact() {
   const { t } = useLanguage();
-  const [state, formAction] = useActionState(submitContactForm, initialState);
+  const [state, setState] = useState<ContactFormState>({ status: "idle" });
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+
+    if (!accessKey) {
+      setState({
+        status: "error",
+        message: "La configuración de envío no está disponible. Intenta nuevamente en unos minutos.",
+      });
+      return;
+    }
+
+    setPending(true);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          access_key: accessKey,
+          subject: "Nueva solicitud desde APLearning",
+          from_name: payload.name,
+        }),
+      });
+      const result = (await response.json()) as { success?: boolean; message?: string; body?: { message?: string } };
+
+      if (response.ok && result.success) {
+        form.reset();
+        setState({ status: "success" });
+        return;
+      }
+
+      setState({
+        status: "error",
+        message: result.message ?? result.body?.message ?? "El servicio de envío rechazó la solicitud. Intenta nuevamente.",
+      });
+    } catch {
+      setState({
+        status: "error",
+        message: "No se pudo conectar con el servicio de envío. Intenta nuevamente.",
+      });
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
     <section id="contacto" className="py-20 sm:py-24">
@@ -120,7 +171,7 @@ export function Contact() {
               </p>
             </div>
           ) : (
-            <form action={formAction} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {state.status === "error" && (
                 <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
                   <p className="text-sm font-medium text-red-500">{t.contact.formErrorTitle}</p>
@@ -174,7 +225,7 @@ export function Contact() {
                   className="w-full resize-none rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-accent"
                 />
               </label>
-              <SubmitButton label={t.contact.formSubmit} pendingLabel={t.contact.formSubmitting} />
+              <SubmitButton label={t.contact.formSubmit} pendingLabel={t.contact.formSubmitting} pending={pending} />
             </form>
           )}
         </motion.div>
