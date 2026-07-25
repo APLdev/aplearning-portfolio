@@ -15,6 +15,9 @@ export interface ProjectMeta {
   /** Real screenshots for shipped projects. When present, these replace the
    * abstract mockup everywhere (card thumbnail + detail gallery). */
   images?: ProjectImage[];
+  /** Optional cropped/borderless variant of images[0] used only for the
+   * project card thumbnail (cover). Falls back to images[0] when absent. */
+  thumbnail?: string;
 }
 
 // Translated copy (title, client, description, challenge, solution) lives in
@@ -31,6 +34,7 @@ export const projectsMeta: ProjectMeta[] = [
     tech: ["HTML5 interactivo", "SCORM", "CSS/JS a medida"],
     accent: "emerald",
     mockup: 2,
+    thumbnail: "/projects/banrep-seguridad-vial/m1-cover-thumb.png",
     images: [
       { src: "/projects/banrep-seguridad-vial/m1-cover.png", w: 1440, h: 810 },
       { src: "/projects/banrep-seguridad-vial/m1-carrusel.png", w: 1440, h: 810 },

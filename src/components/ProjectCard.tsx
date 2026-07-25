@@ -21,7 +21,7 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
       {project.images?.length ? (
         <div className="relative aspect-video w-full overflow-hidden border-b border-border bg-surface">
           <Image
-            src={project.images[0].src}
+            src={project.thumbnail ?? project.images[0].src}
             alt={project.title}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
