@@ -34,8 +34,8 @@ export const projectsMeta: ProjectMeta[] = [
     images: [
       { src: "/projects/banrep-seguridad-vial/m1-cover.png", w: 1440, h: 810 },
       { src: "/projects/banrep-seguridad-vial/m1-carrusel.png", w: 1440, h: 810 },
-      { src: "/projects/banrep-seguridad-vial/m2-cover.png", w: 1440, h: 810 },
-      { src: "/projects/banrep-seguridad-vial/m3-cover.png", w: 1440, h: 810 },
+      { src: "/projects/banrep-seguridad-vial/m2-simulador.png", w: 1440, h: 810 },
+      { src: "/projects/banrep-seguridad-vial/m3-simulador.png", w: 1440, h: 810 },
     ],
   },
   {
