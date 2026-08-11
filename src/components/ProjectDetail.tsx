@@ -91,6 +91,7 @@ export function ProjectDetail({ slug }: { slug: string }) {
                 alt={project.title}
                 width={project.images[0].w}
                 height={project.images[0].h}
+                unoptimized={project.images[0].animated}
                 className="w-full object-contain"
               />
             </section>
@@ -111,6 +112,7 @@ export function ProjectDetail({ slug }: { slug: string }) {
                         alt={project.title}
                         width={image.w}
                         height={image.h}
+                        unoptimized={image.animated}
                         className="w-full object-contain"
                       />
                     </div>

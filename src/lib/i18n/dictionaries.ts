@@ -109,6 +109,17 @@ export const es = {
           "Construimos un recorrido por secciones con la metáfora de 'un legado que ilumina', casos y dilemas éticos, y una batería de actividades e interacciones a lo largo del curso: arrastrar y soltar, selección de respuestas múltiples, tabs, ventanas emergentes, carruseles y exploradores de contenido — todo en la identidad visual de MAC y listo para su LMS.",
         tags: ["Código de ética", "Sector salud", "Cumplimiento"],
       },
+      "videos-onboarding-stl": {
+        title: "Videos animados de inducción",
+        client: "STL — Sur Terminales Logísticas (Uruguay)",
+        description:
+          "Produjimos dos videos animados de inducción: uno presenta la empresa, sus terminales en Uruguay y los beneficios del colaborador; el otro, las normas de seguridad de la terminal STL Depot.",
+        challenge:
+          "La inducción de STL se dictaba en reuniones presenciales con cada grupo de ingresantes. Ocupaba agenda de varias áreas, era difícil de sostener con el ritmo de incorporaciones y el mensaje cambiaba según quién la diera.",
+        solution:
+          "Ilustramos y animamos dos piezas 2D con locución profesional. La primera recorre qué hace STL, sus valores, un mapa con cada terminal del país y su función, las políticas internas y los beneficios. La segunda es la inducción de seguridad de STL Depot: circulación, velocidad, zona de inspección, maniobras y clasificación de residuos. Hoy se envían antes del primer día y la reunión queda para resolver dudas.",
+        tags: ["Video animado", "Onboarding", "Logística"],
+      },
     },
   },
   why: {
@@ -288,6 +299,17 @@ export const en: Dictionary = {
         solution:
           "We built a section-by-section journey around the metaphor of 'a legacy that lights the way', with cases and ethical dilemmas, and a full range of activities and interactions throughout the course: drag-and-drop, multiple-choice questions, tabs, pop-ups, carousels and content explorers — all in MAC's visual identity and ready for their LMS.",
         tags: ["Code of ethics", "Healthcare", "Compliance"],
+      },
+      "videos-onboarding-stl": {
+        title: "Animated induction videos",
+        client: "STL — Sur Terminales Logísticas (Uruguay)",
+        description:
+          "We produced two animated induction videos: one introduces the company, its terminals across Uruguay and employee benefits; the other covers the safety rules of the STL Depot terminal.",
+        challenge:
+          "STL ran its induction as in-person meetings with each group of new hires. It took up time across several teams, was hard to sustain at their hiring pace, and the message shifted depending on who delivered it.",
+        solution:
+          "We illustrated and animated two 2D pieces with professional voice-over. The first covers what STL does, its values, a map of every terminal in the country and its function, internal policies and benefits. The second is the STL Depot safety induction: circulation, speed limits, the inspection area, manoeuvring and waste sorting. They now go out before day one, leaving the meeting free for questions.",
+        tags: ["Animated video", "Onboarding", "Logistics"],
       },
     },
   },

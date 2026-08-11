@@ -5,6 +5,9 @@ export interface ProjectImage {
   src: string;
   w: number;
   h: number;
+  /** Animated source (GIF). Skips the image optimizer, which would otherwise
+   * strip the animation. */
+  animated?: boolean;
 }
 
 export interface ProjectMeta {
@@ -23,18 +26,6 @@ export interface ProjectMeta {
 // Translated copy (title, client, description, challenge, solution) lives in
 // the dictionaries at src/lib/i18n/dictionaries.ts under `projects.items[slug]`.
 export const projectsMeta: ProjectMeta[] = [
-  {
-    slug: "efecto-wow-sportline",
-    tech: ["Storyline 360", "SCORM", "Locución embebida"],
-    accent: "indigo",
-    mockup: 1,
-    images: [
-      { src: "/projects/sportline-efecto-wow/01-cover.png", w: 1315, h: 738 },
-      { src: "/projects/sportline-efecto-wow/02-modelo-servicio.png", w: 1315, h: 739 },
-      { src: "/projects/sportline-efecto-wow/03-conexion-audios.png", w: 1313, h: 740 },
-      { src: "/projects/sportline-efecto-wow/04-emocion-drag-drop.png", w: 1471, h: 825 },
-    ],
-  },
   {
     slug: "seguridad-vial-banrep",
     tech: ["HTML5 interactivo", "SCORM", "CSS/JS a medida"],
@@ -61,6 +52,18 @@ export const projectsMeta: ProjectMeta[] = [
     ],
   },
   {
+    slug: "efecto-wow-sportline",
+    tech: ["Storyline 360", "SCORM", "Locución embebida"],
+    accent: "indigo",
+    mockup: 1,
+    images: [
+      { src: "/projects/sportline-efecto-wow/01-cover.png", w: 1315, h: 738 },
+      { src: "/projects/sportline-efecto-wow/02-modelo-servicio.png", w: 1315, h: 739 },
+      { src: "/projects/sportline-efecto-wow/03-conexion-audios.png", w: 1313, h: 740 },
+      { src: "/projects/sportline-efecto-wow/04-emocion-drag-drop.png", w: 1471, h: 825 },
+    ],
+  },
+  {
     slug: "codigo-etica-mac",
     tech: ["Storyline 360", "SCORM", "Interacciones a medida"],
     accent: "violet",
@@ -70,6 +73,20 @@ export const projectsMeta: ProjectMeta[] = [
       { src: "/projects/mac-codigo-etica/02-sanciones-exclusiones.png", w: 1313, h: 738 },
       { src: "/projects/mac-codigo-etica/03-filosofia-drag-drop.png", w: 1315, h: 735 },
       { src: "/projects/mac-codigo-etica/04-cumplimiento-legal.png", w: 1317, h: 739 },
+    ],
+  },
+  {
+    slug: "videos-onboarding-stl",
+    tech: ["Video animado 2D", "Ilustración vectorial", "Locución profesional"],
+    accent: "amber",
+    mockup: 2,
+    // Static cover so the listing card doesn't pull the animated GIFs.
+    thumbnail: "/projects/stl-onboarding/cover-thumb.png",
+    images: [
+      { src: "/projects/stl-onboarding/01-terminales.gif", w: 800, h: 450, animated: true },
+      { src: "/projects/stl-onboarding/02-depot-seguridad.gif", w: 800, h: 450, animated: true },
+      { src: "/projects/stl-onboarding/03-beneficios.png", w: 1440, h: 810 },
+      { src: "/projects/stl-onboarding/04-depot-equipo.png", w: 1440, h: 810 },
     ],
   },
 ];
