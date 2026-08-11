@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useProjects } from "@/lib/data/useProjects";
 import { ProjectCard } from "@/components/ProjectCard";
+import { Expertise } from "@/components/Expertise";
 
 export default function ProjectsPage() {
   const { t } = useLanguage();
@@ -18,7 +19,9 @@ export default function ProjectsPage() {
         </h1>
       </div>
 
-      <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <Expertise variant="inline" />
+
+      <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((project, i) => (
           <ProjectCard key={project.slug} project={project} index={i} />
         ))}

@@ -13,9 +13,9 @@ export const es = {
   },
   hero: {
     eyebrow: "Desarrollo de cursos e-learning para empresas",
-    title: "Tus documentos, convertidos en un curso e-learning listo para publicar.",
+    title: "Tus documentos, convertidos en un curso e-learning listo para tu LMS.",
     subtitle:
-      "Transformo manuales, PDFs, PowerPoints y documentación técnica en cursos interactivos para Storyline, SCORM y tu LMS. Tú entregas el conocimiento, yo entrego el curso terminado.",
+      "Transformo manuales, PDFs, presentaciones y documentación técnica en experiencias de aprendizaje interactivas. Tú aportas el conocimiento; yo diseño, desarrollo y entrego un curso terminado, en formato SCORM o xAPI.",
     ctaPrimary: "Solicitar cotización",
     ctaSecondary: "Ver proyectos",
     mockup: {
@@ -48,7 +48,7 @@ export const es = {
       {
         title: "Desarrollo SCORM",
         description:
-          "Cursos listos para Storyline, SCORM y cualquier plataforma LMS, sin dolores de cabeza técnicos.",
+          "Entrego paquetes SCORM o xAPI probados y listos para cargar en tu LMS.",
       },
     ],
   },
@@ -122,6 +122,45 @@ export const es = {
       },
     },
   },
+  expertise: {
+    eyebrow: "Áreas de experiencia",
+    title: "Experiencia que va más allá de los proyectos publicados.",
+    subtitle: "He desarrollado cursos para equipos corporativos en temas como:",
+    items: [
+      {
+        label: "SST y medio ambiente",
+        detail: "IPERC y ATS, EPPs, trabajos de alto riesgo, emergencias, ergonomía y gestión de residuos.",
+      },
+      {
+        label: "Compliance",
+        detail: "Prevención de delitos, PLAFT, códigos de ética y canales de denuncia.",
+      },
+      {
+        label: "Gestión de personas",
+        detail: "Evaluación de desempeño y competencias, remuneraciones e inducción.",
+      },
+      {
+        label: "Cultura y diversidad",
+        detail: "Ley Karin, trato respetuoso y comportamientos organizacionales.",
+      },
+      {
+        label: "Seguridad de la información",
+        detail: "Protección de datos personales y sistemas de gestión de la información.",
+      },
+      {
+        label: "Cloud y datos",
+        detail: "Funcionamiento de la nube, observabilidad y estrategia de datos.",
+      },
+      {
+        label: "Operaciones",
+        detail: "Procedimientos operativos, activos fijos y sistemas de seguridad.",
+      },
+      {
+        label: "Inocuidad alimentaria",
+        detail: "HACCP, alérgenos y enfermedades transmitidas por alimentos.",
+      },
+    ],
+  },
   why: {
     eyebrow: "¿Por qué trabajar conmigo?",
     title: "Menos intermediarios, más resultados.",
@@ -160,9 +199,9 @@ export const es = {
   },
   contact: {
     eyebrow: "Contacto",
-    title: "Cuéntame sobre tu contenido y te propongo cómo convertirlo en curso.",
+    title: "Cuéntame qué materiales tienes y para quién es el curso.",
     subtitle:
-      "Completa el formulario o escríbeme directamente. Normalmente respondo en menos de 24 horas hábiles.",
+      "Te responderé con una propuesta de enfoque y cotización en menos de 24 horas hábiles.",
     formName: "Nombre",
     formCompany: "Empresa",
     formEmail: "Correo",
@@ -204,9 +243,9 @@ export const en: Dictionary = {
   },
   hero: {
     eyebrow: "E-learning course development for companies",
-    title: "Your documents, turned into a course ready to publish.",
+    title: "Your documents, turned into an e-learning course ready for your LMS.",
     subtitle:
-      "I transform manuals, PDFs, slide decks and technical documentation into interactive courses for Storyline, SCORM and your LMS. You provide the knowledge, I deliver the finished course.",
+      "I transform manuals, PDFs, slide decks and technical documentation into interactive learning experiences. You provide the knowledge; I design, build and deliver a finished course as a SCORM or xAPI package.",
     ctaPrimary: "Request a quote",
     ctaSecondary: "View projects",
     mockup: {
@@ -239,7 +278,7 @@ export const en: Dictionary = {
       {
         title: "SCORM development",
         description:
-          "Courses ready for Storyline, SCORM and any LMS platform, without the technical headaches.",
+          "I deliver tested SCORM or xAPI packages, ready to upload to your LMS.",
       },
     ],
   },
@@ -313,6 +352,45 @@ export const en: Dictionary = {
       },
     },
   },
+  expertise: {
+    eyebrow: "Areas of expertise",
+    title: "Experience that goes beyond the published projects.",
+    subtitle: "I've built courses for corporate teams on topics such as:",
+    items: [
+      {
+        label: "Health, safety & environment",
+        detail: "Risk assessment, PPE, high-risk work, emergencies, ergonomics and waste management.",
+      },
+      {
+        label: "Compliance",
+        detail: "Crime prevention, anti-money laundering, codes of ethics and whistleblowing channels.",
+      },
+      {
+        label: "People management",
+        detail: "Performance and competency reviews, payroll and onboarding.",
+      },
+      {
+        label: "Culture & diversity",
+        detail: "Workplace harassment prevention, respectful conduct and organizational behaviour.",
+      },
+      {
+        label: "Information security",
+        detail: "Personal data protection and information management systems.",
+      },
+      {
+        label: "Cloud & data",
+        detail: "How the cloud works, observability and data strategy.",
+      },
+      {
+        label: "Operations",
+        detail: "Operating procedures, fixed assets and security systems.",
+      },
+      {
+        label: "Food safety",
+        detail: "HACCP, allergens and foodborne illness.",
+      },
+    ],
+  },
   why: {
     eyebrow: "Why work with me?",
     title: "Fewer intermediaries, more results.",
@@ -351,9 +429,9 @@ export const en: Dictionary = {
   },
   contact: {
     eyebrow: "Contact",
-    title: "Tell me about your content and I'll propose how to turn it into a course.",
+    title: "Tell me what materials you have and who the course is for.",
     subtitle:
-      "Fill out the form or write to me directly. I usually reply within 24 business hours.",
+      "I'll reply with a proposed approach and a quote within 24 business hours.",
     formName: "Name",
     formCompany: "Company",
     formEmail: "Email",
