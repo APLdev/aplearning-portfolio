@@ -65,27 +65,27 @@ export const es = {
     galleryTitle: "Vistas del curso",
     videoPlaceholder: "Vista previa en video",
     items: {
-      "onboarding-comercial": {
-        title: "Onboarding para equipo comercial",
-        client: "Empresa de retail (proyecto de ejemplo)",
+      "efecto-wow-sportline": {
+        title: "Efecto WOW: modelo de servicio en tienda",
+        client: "Sportline",
         description:
-          "Convertimos un manual de ventas de 80 páginas en un curso interactivo de onboarding con simulaciones de conversación.",
+          "Convertimos el modelo de atención de Sportline en un curso interactivo que recorre los cinco pasos del Efecto WOW, con audios de ejemplo y práctica de recomendación de calzado.",
         challenge:
-          "El equipo de Recursos Humanos tenía un manual extenso en Word que los nuevos vendedores casi nunca terminaban de leer. La información era valiosa, pero el formato no ayudaba a retenerla.",
+          "Sportline necesitaba que los asesores de tienda aplicaran un mismo modelo de servicio en toda la cadena. El material existente era una presentación de conceptos: describía las etapas de la venta, pero no mostraba cómo suenan ni cómo se ejecutan en el piso de venta.",
         solution:
-          "Reestructuramos el contenido en módulos cortos, agregamos simulaciones de conversación con clientes y un quiz final con retroalimentación inmediata. El resultado: un curso SCORM listo para publicarse en su LMS en menos de tres semanas.",
-        tags: ["Onboarding", "Simulación de diálogos", "Retail"],
+          "Estructuramos el curso en los cinco pasos del modelo (Conexión, Sintonía, Emoción, Power On y Punto WOW), con audios cortos para cada técnica de atención y varias actividades de práctica a lo largo del recorrido: arrastrar y soltar, selección de respuestas múltiples y completar cuadros, todo en la identidad visual de la marca — listo para publicarse como SCORM en su LMS.",
+        tags: ["Modelo de servicio", "Retail deportivo", "Fuerza de ventas"],
       },
       "seguridad-vial-banrep": {
-        title: "Programa de seguridad vial en 3 módulos",
+        title: "Programa de seguridad vial en 4 módulos",
         client: "Banco de la República (Banrep)",
         description:
-          "Convertimos el programa de seguridad vial del Banco en tres módulos interactivos — el problema en la vía, cómo lo gestiona el Banco y las reglas del camino — con datos, casos reales y una actividad práctica.",
+          "Convertimos el programa de seguridad vial del Banco en cuatro módulos interactivos que recorren el problema en la vía, cómo lo gestiona el Banco y las reglas del camino, con datos, casos reales y actividades prácticas.",
         challenge:
           "El equipo de bienestar y seguridad del Banco necesitaba concientizar a cientos de colaboradores sobre la accidentalidad vial y los desplazamientos laborales: un tema sensible que exigía cifras reales, casos prácticos y mucha claridad sobre qué cuenta como trayecto laboral.",
         solution:
-          "Diseñamos tres módulos con la narrativa de un recorrido por 'paradas', carruseles de datos, una actividad de clasificación con un caso real y la identidad visual del programa PESV del Banco, listos para publicarse como paquete SCORM en su LMS.",
-        tags: ["Seguridad vial", "Sector financiero", "3 módulos"],
+          "Diseñamos cuatro módulos con la narrativa de un recorrido por 'paradas', carruseles de datos, actividades de clasificación a partir de casos reales y la identidad visual del programa PESV del Banco, listos para publicarse como paquete SCORM en su LMS.",
+        tags: ["Seguridad vial", "Sector financiero", "4 módulos"],
       },
       "cumplimiento-normativo-mpf": {
         title: "Curso de cumplimiento normativo y compliance penal",
@@ -98,16 +98,16 @@ export const es = {
           "Construimos un recorrido por secciones (qué es compliance, delitos, sanciones, documentos del modelo de prevención, canal de denuncias) con exploradores interactivos, tarjetas seleccionables y locución, cerrando con el formulario oficial de denuncias — todo en la identidad visual de MPF.",
         tags: ["Compliance", "Cumplimiento legal", "Agroindustria"],
       },
-      "induccion-corporativa": {
-        title: "Inducción corporativa multinacional",
-        client: "Empresa de servicios profesionales (proyecto de ejemplo)",
+      "codigo-etica-mac": {
+        title: "Curso del Código de Ética y Conducta",
+        client: "Grupo Hospitalario MAC",
         description:
-          "Creamos un curso de bienvenida institucional a partir de un PowerPoint corporativo y videos internos.",
+          "Convertimos el Código de Ética y Conducta de Hospitales MAC en un curso interactivo con dilemas éticos, la filosofía organizacional y el régimen de sanciones y exclusiones.",
         challenge:
-          "La inducción se dictaba en sesiones en vivo que no escalaban bien entre las distintas sedes del cliente, generando información inconsistente entre países.",
+          "MAC necesitaba que médicos y colaboradores de toda la red hospitalaria conocieran su Código de Ética y Conducta: un documento normativo extenso que abarca filosofía organizacional, cumplimiento legal, investigaciones y sanciones, y que en su formato original difícilmente se leía completo.",
         solution:
-          "Convertimos el PowerPoint institucional y los videos de bienvenida en un curso autocontenido con narración profesional, disponible en el LMS para cualquier nueva contratación, en cualquier sede.",
-        tags: ["Inducción", "Multisede", "Servicios profesionales"],
+          "Construimos un recorrido por secciones con la metáfora de 'un legado que ilumina', casos y dilemas éticos, y una batería de actividades e interacciones a lo largo del curso: arrastrar y soltar, selección de respuestas múltiples, tabs, ventanas emergentes, carruseles y exploradores de contenido — todo en la identidad visual de MAC y listo para su LMS.",
+        tags: ["Código de ética", "Sector salud", "Cumplimiento"],
       },
     },
   },
@@ -166,6 +166,9 @@ export const es = {
     emailLabel: "Correo",
     linkedinLabel: "LinkedIn",
     whatsappLabel: "WhatsApp",
+    whatsappFabAria: "Escríbeme por WhatsApp",
+    whatsappFabPrefill:
+      "Hola Adrián, vi tu portafolio de cursos e-learning y quiero conversar sobre un proyecto.",
   },
   footer: {
     rights: "Todos los derechos reservados.",
@@ -242,27 +245,27 @@ export const en: Dictionary = {
     galleryTitle: "Course previews",
     videoPlaceholder: "Video preview",
     items: {
-      "onboarding-comercial": {
-        title: "Sales team onboarding",
-        client: "Retail company (sample project)",
+      "efecto-wow-sportline": {
+        title: "WOW effect: in-store service model",
+        client: "Sportline",
         description:
-          "We turned an 80-page sales manual into an interactive onboarding course with conversation simulations.",
+          "We turned Sportline's service model into an interactive course walking through the five steps of the WOW effect, with sample audio and hands-on footwear recommendation practice.",
         challenge:
-          "HR had a lengthy Word manual that new sales reps rarely finished reading. The information was valuable, but the format didn't help retention.",
+          "Sportline needed store associates across the chain to apply one consistent service model. The existing material was a concept deck: it described the stages of the sale, but never showed how they sound or how they play out on the sales floor.",
         solution:
-          "We restructured the content into short modules, added customer conversation simulations and a final quiz with instant feedback. The result: a SCORM course ready to publish on their LMS in under three weeks.",
-        tags: ["Onboarding", "Dialogue simulation", "Retail"],
+          "We structured the course around the model's five steps (Connection, Rapport, Emotion, Power On and WOW Point), with short audio clips for each service technique and several practice activities along the way: drag-and-drop, multiple-choice questions and fill-in-the-blank exercises, all in the brand's visual identity — ready to publish as SCORM on their LMS.",
+        tags: ["Service model", "Sports retail", "Sales force"],
       },
       "seguridad-vial-banrep": {
-        title: "3-module road safety program",
+        title: "4-module road safety program",
         client: "Banco de la República (Banrep)",
         description:
-          "We turned the Bank's road safety program into three interactive modules — the problem on the road, how the Bank manages it, and the rules of the road — with data, real cases and a hands-on activity.",
+          "We turned the Bank's road safety program into four interactive modules covering the problem on the road, how the Bank manages it and the rules of the road, with data, real cases and hands-on activities.",
         challenge:
           "The Bank's wellness and safety team needed to raise awareness among hundreds of employees about road accidents and work-related travel: a sensitive topic that demanded real figures, practical cases and real clarity on what counts as a work commute.",
         solution:
-          "We designed three modules built around a 'stops on a journey' narrative, data carousels, a classification activity based on a real case, and the visual identity of the Bank's PESV program — ready to publish as a SCORM package on their LMS.",
-        tags: ["Road safety", "Financial sector", "3 modules"],
+          "We designed four modules built around a 'stops on a journey' narrative, data carousels, classification activities based on real cases, and the visual identity of the Bank's PESV program — ready to publish as a SCORM package on their LMS.",
+        tags: ["Road safety", "Financial sector", "4 modules"],
       },
       "cumplimiento-normativo-mpf": {
         title: "Regulatory compliance & criminal liability course",
@@ -275,16 +278,16 @@ export const en: Dictionary = {
           "We built a section-by-section journey (what compliance is, crimes, sanctions, prevention-model documents, whistleblowing channel) with interactive explorers, selectable cards and narration, closing with the official reporting form — all in MPF's visual identity.",
         tags: ["Compliance", "Regulatory compliance", "Agribusiness"],
       },
-      "induccion-corporativa": {
-        title: "Multinational corporate induction",
-        client: "Professional services company (sample project)",
+      "codigo-etica-mac": {
+        title: "Code of Ethics & Conduct course",
+        client: "Grupo Hospitalario MAC",
         description:
-          "We created an institutional welcome course from a corporate slide deck and internal videos.",
+          "We turned Hospitales MAC's Code of Ethics and Conduct into an interactive course covering ethical dilemmas, the organizational philosophy, and the sanctions and exclusions regime.",
         challenge:
-          "Induction was delivered through live sessions that didn't scale well across the client's offices, leading to inconsistent information between countries.",
+          "MAC needed physicians and staff across the hospital network to know its Code of Ethics and Conduct: a long policy document spanning organizational philosophy, legal compliance, investigations and sanctions — one that in its original format was rarely read cover to cover.",
         solution:
-          "We converted the institutional deck and welcome videos into a self-contained course with professional narration, available on the LMS for any new hire, at any office.",
-        tags: ["Induction", "Multi-site", "Professional services"],
+          "We built a section-by-section journey around the metaphor of 'a legacy that lights the way', with cases and ethical dilemmas, and a full range of activities and interactions throughout the course: drag-and-drop, multiple-choice questions, tabs, pop-ups, carousels and content explorers — all in MAC's visual identity and ready for their LMS.",
+        tags: ["Code of ethics", "Healthcare", "Compliance"],
       },
     },
   },
@@ -343,6 +346,9 @@ export const en: Dictionary = {
     emailLabel: "Email",
     linkedinLabel: "LinkedIn",
     whatsappLabel: "WhatsApp",
+    whatsappFabAria: "Message me on WhatsApp",
+    whatsappFabPrefill:
+      "Hi Adrián, I saw your e-learning portfolio and I'd like to talk about a project.",
   },
   footer: {
     rights: "All rights reserved.",

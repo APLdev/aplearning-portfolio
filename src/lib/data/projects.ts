@@ -24,10 +24,16 @@ export interface ProjectMeta {
 // the dictionaries at src/lib/i18n/dictionaries.ts under `projects.items[slug]`.
 export const projectsMeta: ProjectMeta[] = [
   {
-    slug: "onboarding-comercial",
-    tech: ["Storyline 360", "SCORM 2004", "Figma"],
+    slug: "efecto-wow-sportline",
+    tech: ["Storyline 360", "SCORM", "Locución embebida"],
     accent: "indigo",
     mockup: 1,
+    images: [
+      { src: "/projects/sportline-efecto-wow/01-cover.png", w: 1315, h: 738 },
+      { src: "/projects/sportline-efecto-wow/02-modelo-servicio.png", w: 1315, h: 739 },
+      { src: "/projects/sportline-efecto-wow/03-conexion-audios.png", w: 1313, h: 740 },
+      { src: "/projects/sportline-efecto-wow/04-emocion-drag-drop.png", w: 1471, h: 825 },
+    ],
   },
   {
     slug: "seguridad-vial-banrep",
@@ -55,10 +61,16 @@ export const projectsMeta: ProjectMeta[] = [
     ],
   },
   {
-    slug: "induccion-corporativa",
-    tech: ["Storyline 360", "SCORM 2004", "After Effects"],
+    slug: "codigo-etica-mac",
+    tech: ["Storyline 360", "SCORM", "Interacciones a medida"],
     accent: "violet",
     mockup: 4,
+    images: [
+      { src: "/projects/mac-codigo-etica/01-fundamentos.png", w: 1316, h: 737 },
+      { src: "/projects/mac-codigo-etica/02-sanciones-exclusiones.png", w: 1313, h: 738 },
+      { src: "/projects/mac-codigo-etica/03-filosofia-drag-drop.png", w: 1315, h: 735 },
+      { src: "/projects/mac-codigo-etica/04-cumplimiento-legal.png", w: 1317, h: 739 },
+    ],
   },
 ];
 
