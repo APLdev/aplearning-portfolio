@@ -28,7 +28,7 @@ export default function ProjectsPage() {
       </div>
 
       <div className="mt-14 flex flex-col items-start gap-4 rounded-2xl border border-border bg-surface/60 p-8 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-base font-medium">{t.hero.ctaPrimary}?</p>
+        <p className="text-base font-medium">{t.projects.ctaPrompt}</p>
         <Link
           href="/#contacto"
           className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
