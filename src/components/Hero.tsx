@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { TransformMockup } from "@/components/TransformMockup";
+import { CoursePreview } from "@/components/CoursePreview";
 
 export function Hero() {
   const { t } = useLanguage();
 
   return (
     <section className="border-b border-border">
-      <div className="container-page grid gap-12 py-20 sm:py-24 lg:grid-cols-2 lg:items-center lg:py-28">
+      <div className="container-page grid gap-10 py-12 sm:py-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-12 lg:py-20">
         <div>
           <motion.p
             initial={{ opacity: 0, y: 10 }}
@@ -25,7 +25,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="mt-4 text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-[3.25rem] lg:leading-[1.05]"
+            className="mt-4 text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-[2.75rem] lg:leading-[1.08]"
           >
             {t.hero.title}
           </motion.h1>
@@ -61,7 +61,7 @@ export function Hero() {
         </div>
 
         <div className="flex justify-center lg:justify-end">
-          <TransformMockup />
+          <CoursePreview />
         </div>
       </div>
     </section>

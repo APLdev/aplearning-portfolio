@@ -81,6 +81,16 @@ export function ProjectDetail({ slug }: { slug: string }) {
               </span>
             ))}
           </div>
+          {project.demoUrl && (
+            <a
+              href={project.demoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex rounded-full bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+            >
+              {t.projects.viewDemo}
+            </a>
+          )}
         </motion.div>
 
         {project.images?.length ? (

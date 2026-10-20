@@ -41,7 +41,7 @@ export function WhyMe() {
               transition={{ duration: 0.5, delay: (i % 3) * 0.08 }}
               className="flex gap-4"
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-copper-soft text-copper">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   {ICONS[i]}
                 </svg>

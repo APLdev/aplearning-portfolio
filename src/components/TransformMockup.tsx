@@ -64,7 +64,7 @@ export function TransformMockup() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="flex flex-col items-center gap-1 text-accent"
+          className="flex flex-col items-center gap-1 text-copper"
           aria-hidden
         >
           <motion.svg

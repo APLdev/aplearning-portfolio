@@ -21,11 +21,29 @@ export interface ProjectMeta {
   /** Optional cropped/borderless variant of images[0] used only for the
    * project card thumbnail (cover). Falls back to images[0] when absent. */
   thumbnail?: string;
+  /** Card-only zoom to crop padding embedded in a cover image. */
+  thumbnailScale?: number;
+  demoUrl?: string;
 }
 
 // Translated copy (title, client, description, challenge, solution) lives in
 // the dictionaries at src/lib/i18n/dictionaries.ts under `projects.items[slug]`.
 export const projectsMeta: ProjectMeta[] = [
+  {
+    slug: "diversidad-equidad-inclusion",
+    tech: ["HTML5", "CSS / JavaScript", "SVG interactivo"],
+    accent: "violet",
+    mockup: 4,
+    thumbnail: "/projects/diversidad-equidad-inclusion/cover.png",
+    thumbnailScale: 1.09,
+    demoUrl: "/projects/diversidad-equidad-inclusion/demo.html",
+    images: [
+      { src: "/projects/diversidad-equidad-inclusion/02-igualdad-equidad.gif", w: 960, h: 540, animated: true },
+      { src: "/projects/diversidad-equidad-inclusion/01-perspectivas.gif", w: 960, h: 540, animated: true },
+      { src: "/projects/diversidad-equidad-inclusion/03-iceberg.gif", w: 960, h: 540, animated: true },
+      { src: "/projects/diversidad-equidad-inclusion/04-clasificacion.gif", w: 960, h: 540, animated: true },
+    ],
+  },
   {
     slug: "seguridad-vial-banrep",
     tech: ["HTML5 interactivo", "SCORM", "CSS/JS a medida"],
@@ -90,6 +108,13 @@ export const projectsMeta: ProjectMeta[] = [
     ],
   },
 ];
+
+// Refresh optimized images and browser caches after embedding the watermark.
+for (const project of projectsMeta) {
+  const source = project.thumbnail ?? project.images?.[0]?.src;
+  if (source) project.thumbnail = source.slice(0, source.lastIndexOf("/")) + "/thumbnail-clean.png";
+  for (const image of project.images ?? []) image.src += "?v=watermark-2";
+}
 
 export function getProjectMeta(slug: string): ProjectMeta | undefined {
   return projectsMeta.find((p) => p.slug === slug);

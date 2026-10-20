@@ -27,6 +27,7 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
             unoptimized={!project.thumbnail && project.images[0].animated}
             className="object-cover object-top"
+            style={project.thumbnailScale ? { transform: `scale(${project.thumbnailScale})` } : undefined}
           />
         </div>
       ) : (

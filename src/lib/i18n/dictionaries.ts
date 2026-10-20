@@ -65,7 +65,19 @@ export const es = {
     techTitle: "Tecnologías",
     galleryTitle: "Vistas del curso",
     videoPlaceholder: "Vista previa en video",
+    viewDemo: "Explorar demo interactiva",
     items: {
+      "diversidad-equidad-inclusion": {
+        title: "Diversidad, equidad e inclusión en acción",
+        client: "Carrefour · Versión de demostración",
+        description:
+          "Transformé conceptos de diversidad, equidad e inclusión en una experiencia de exploración y práctica: cambiar de perspectiva, descubrir la diversidad invisible y clasificar situaciones cotidianas.",
+        challenge:
+          "Acercar conceptos sensibles y abstractos a la realidad del trabajo, con ejemplos cotidianos que inviten a cuestionar supuestos y reconocer distintas necesidades.",
+        solution:
+          "Desarrollé un curso en HTML con ilustraciones SVG interactivas, una comparación entre igualdad y equidad, un iceberg explorable, un cambio de perspectiva y actividades de arrastrar y soltar con retroalimentación. Esta versión de demostración reúne una selección del curso original de Carrefour, sin la identidad visual ni los recursos propios del cliente.",
+        tags: ["Diversidad e inclusión", "Retail", "Aprendizaje interactivo"],
+      },
       "efecto-wow-sportline": {
         title: "Efecto WOW: modelo de servicio en tienda",
         client: "Sportline",
@@ -296,7 +308,19 @@ export const en: Dictionary = {
     techTitle: "Technologies",
     galleryTitle: "Course previews",
     videoPlaceholder: "Video preview",
+    viewDemo: "Explore interactive demo",
     items: {
+      "diversidad-equidad-inclusion": {
+        title: "Diversity, equity and inclusion in action",
+        client: "Carrefour · Demonstration version",
+        description:
+          "I turned diversity, equity and inclusion concepts into an experience built around exploration and practice: switching perspectives, discovering invisible diversity and sorting everyday situations.",
+        challenge:
+          "Connect sensitive, abstract concepts to everyday work through relatable examples that encourage learners to question assumptions and recognize different needs.",
+        solution:
+          "I developed an HTML course with interactive SVG illustrations, an equality and equity comparison, an explorable iceberg, a perspective switch and drag-and-drop activities with feedback. This demonstration version presents selected parts of the original Carrefour course without the client's visual identity or proprietary assets.",
+        tags: ["Diversity and inclusion", "Retail", "Interactive learning"],
+      },
       "efecto-wow-sportline": {
         title: "WOW effect: in-store service model",
         client: "Sportline",
