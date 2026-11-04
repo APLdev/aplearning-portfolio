@@ -13,11 +13,14 @@ export interface Project extends ProjectMeta {
 }
 
 export function useProjects(): Project[] {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   return projectsMeta.map((meta) => {
     const copy = t.projects.items[meta.slug as keyof typeof t.projects.items];
-    return { ...meta, ...copy };
+    const demoUrl = lang === "en" && meta.slug === "diversidad-equidad-inclusion" && meta.demoUrl
+      ? meta.demoUrl.replace(/demo\.html$/, "demo-en.html")
+      : meta.demoUrl;
+    return { ...meta, ...copy, demoUrl };
   });
 }
 

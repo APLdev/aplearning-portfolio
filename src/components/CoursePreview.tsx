@@ -9,7 +9,7 @@ export function CoursePreview() {
   const { lang } = useLanguage();
   const [playing, setPlaying] = useState(false);
   const es = lang === "es";
-  const demo = "/projects/diversidad-equidad-inclusion/demo.html";
+  const demo = `/projects/diversidad-equidad-inclusion/demo${es ? "" : "-en"}.html`;
 
   return (
     <div className="w-full min-w-0">
@@ -31,7 +31,7 @@ export function CoursePreview() {
           {playing ? (
             <iframe
               src={demo}
-              title={es ? "Curso de diversidad: demostración interactiva en español" : "Diversity course: interactive demonstration in Spanish"}
+              title={es ? "Curso de diversidad: demostración interactiva en español" : "Diversity course: interactive demonstration in English"}
               className="absolute inset-0 h-full w-full border-0"
               allowFullScreen
             />
@@ -61,7 +61,7 @@ export function CoursePreview() {
           )}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-muted">
-          <span>{es ? "Versión de demostración · Curso en español" : "Demonstration version · Course in Spanish"}</span>
+          <span>{es ? "Versión de demostración · Curso en español" : "Demonstration version · Course in English"}</span>
           <a href={demo} target="_blank" rel="noopener noreferrer" className="font-medium text-accent underline-offset-4 hover:underline">
             {es ? "Abrir en pantalla completa ↗" : "Open full view ↗"}
           </a>

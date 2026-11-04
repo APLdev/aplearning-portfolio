@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+const p='public/projects/diversidad-equidad-inclusion/';
+let s=fs.readFileSync(p+'demo.html','utf8');
+const pairs=Object.entries(JSON.parse(fs.readFileSync(new URL('./demo-translations.json', import.meta.url), 'utf8')));
+for(const [a,b] of pairs.sort((a,b)=>b[0].length-a[0].length)) s=s.split(a).join(b.replaceAll("'",'’'));
+s=s.replace('lang="es"','lang="en"').replaceAll("w: 'Yo'","w: 'Me'").replaceAll('>YO</text>','>ME</text>');
+s=s.replaceAll("'Module ' + m.mod + ' of 6 · ' + mod.n","'Interactive demo · Diversity, equity and inclusion'");
+s=s.replaceAll("'Module ' + m.mod : mod.s","'Demo' : mod.s");
+s=s.replaceAll('Descubrir: ', 'Discover: ').replaceAll(' Todo esto también nos hace diversos, aunque no se vea a simple vista.', ' All of this makes us diverse, even when it is not visible.');
+s=s.replace("META = meta; NARRATIONS = narr;", "META = meta; NARRATIONS = narr;\n    var demoTitles = ['What is DEI?', 'Equality vs. equity', 'Visible and invisible diversity', 'Biases, stereotypes and prejudice', 'Mini challenge', 'The value of diversity', 'Same resources or tailored support?', 'What is a bias?', 'DEI starts with me'];\n    META.forEach(function (m, i) { m.t = demoTitles[i]; NARRATIONS[i] = { base: demoTitles[i] }; });");
+fs.writeFileSync(p+'demo-en.html',s);
+new vm.Script(s.match(/<script>([\s\S]*?)<\/script>/)[1]);
+console.log('English demo generated; JavaScript syntax valid.');
