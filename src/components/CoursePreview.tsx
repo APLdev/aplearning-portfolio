@@ -27,7 +27,7 @@ export function CoursePreview() {
           <span className="font-semibold">{es ? "Diversidad, equidad e inclusión" : "Diversity, equity and inclusion"}</span>
           <span className="shrink-0 text-muted">Carrefour</span>
         </div>
-        <div className="relative aspect-video overflow-hidden">
+        <div className={`relative overflow-hidden ${playing ? "aspect-[9/16] sm:aspect-video" : "aspect-video"}`}>
           {playing ? (
             <iframe
               src={demo}

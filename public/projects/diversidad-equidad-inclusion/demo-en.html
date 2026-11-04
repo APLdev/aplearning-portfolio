@@ -46,7 +46,7 @@
     --color-incorrect-text:   #A00A18;
     --color-brand-red: #D30D1F;
 
-    --dei-yellow:  #C9BC1C;
+    --dei-yellow:  #B5A900;
     --dei-orange:  #F39200;
     --dei-green:   #3AAA35;
     --dei-teal:    #17A398;
@@ -105,7 +105,7 @@
   /* Tipografía of la Opción B: títulos grandes, mayúsculas, dos tonos */
   .b-eyebrow {
     display: inline-flex; align-items: center; gap: 0.6cqw;
-    font-weight: 900; font-size: 0.94cqw; letter-spacing: 0.16em; text-transform: uppercase;
+    font-weight: 900; font-size: 1.08cqw; letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--color-brand-red);
     margin: 0 0 1.4cqh;
   }
@@ -120,7 +120,7 @@
   .b-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 2cqw; }
   .b-hint {
     flex: none; display: inline-flex; align-items: center; gap: 0.5cqw;
-    font-weight: 800; font-size: 0.98cqw; letter-spacing: 0.06em; text-transform: uppercase;
+    font-weight: 800; font-size: 1.1cqw; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--b-ink); margin-bottom: 2.2cqh;
   }
   .b-hint b { display: inline-flex; align-items: center; justify-content: center; width: 2.2cqw; height: 2.2cqw; border-radius: 50%; border: 2px solid var(--b-ink); font-size: 1.03cqw; }
@@ -721,7 +721,22 @@
   .loop__node.is-current circle { fill: var(--acc); stroke: #fff; }
   .loop__node.is-current text { fill: #fff; }
 
+  /* Pantalla of inicio (web object con audio): blur sobre la portada */
+  .gate { position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(11,42,91,0.28); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transition: opacity 0.45s ease; }
+  .gate[hidden] { display: none; }
+  .gate.is-out { opacity: 0; pointer-events: none; }
+  .gate__box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.2cqh; padding: 4.5cqh 4cqw; border-radius: 2cqw; background: #fff; box-shadow: 0 24px 60px rgba(11,42,91,0.25); max-width: 34cqw; animation: b-art 0.5s ease both; }
+  .gate__ic { width: 5cqw; height: 5cqw; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--color-primary) 12%, #fff); color: var(--color-primary); }
+  .gate__ic svg { width: 55%; height: 55%; }
+  .gate__t { font-weight: 900; font-size: 2cqw; color: var(--b-navy); margin-top: 0.8cqh; }
+  .gate__d { font-size: 1.15cqw; line-height: 1.45; opacity: 0.75; }
+  .gate__btn { margin-top: 1.6cqh; display: inline-flex; align-items: center; gap: 0.7cqw; padding: 1.6cqh 2.4cqw; border: 0; border-radius: 999px; background: #D30D1F; color: #fff; font: inherit; font-weight: 900; font-size: 1.25cqw; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .gate__btn svg { width: 1.3cqw; height: 1.3cqw; }
+  .gate__btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(211,13,31,0.3); }
+  .gate__btn:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+
   /* Quiz en cards: feedback por tarjeta después of resolver */
+  .pick { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pick__fb { display: none; margin-top: auto; padding-top: 1.2cqh; border-top: 1px solid rgba(0,0,0,0.08); font-size: 1.03cqw; line-height: 1.4; }
   .pick__fb b { display: block; font-weight: 900; font-size: 0.98cqw; letter-spacing: 0.04em; margin-bottom: 0.3cqh; }
   .pick.is-correct .pick__fb { display: block; animation: b-art 0.4s ease both; }
@@ -733,6 +748,51 @@
   .dei__side { display: flex; flex-direction: column; min-height: 0; }
   .dei__side .dei__list { margin-top: 1cqh; }
   .dei__panel { height: 100%; max-height: 70cqh; }
+
+  /* Pista "Tap here": mano animada sobre lo que hay que tocar (ver HINTS).
+     .hint es un punto of 0×0 en el centro del objetivo; la punta del índice
+     cae justo ahí. Cerca del borde derecho (hint--l) la mano se espeja; pegada
+     al dock (hint--up) entra of costado. Todo se mide en --u (1cqw del
+     escenario) para que el modo vertical of la demo pueda agrandarla. */
+  .hint { --u: 1cqw; position: absolute; width: 0; height: 0; z-index: 6; pointer-events: none; opacity: 0; transition: opacity 0.35s ease; --sx: 1; --rot: 0deg; }
+  .hint.is-on { opacity: 1; }
+  .hint--l { --sx: -1; }
+  .hint--up { --sx: -1; --rot: 90deg; }
+  .hint--l.hint--up { --sx: 1; }
+  .hint__hand { position: absolute; left: calc(var(--u) * -1.56); top: calc(var(--u) * -0.24); width: calc(var(--u) * 5); aspect-ratio: 64 / 76; transform-origin: 31.25% 3.95%; filter: drop-shadow(0 calc(var(--u) * 0.5) calc(var(--u) * 0.8) rgba(11,42,91,0.28)); }
+  .hint__hand svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .hint.is-on .hint__hand { animation: hint-tap 1.7s cubic-bezier(0.45, 0, 0.3, 1) 0.2s infinite both; }
+  @keyframes hint-tap {
+    0%, 100% { transform: scale(var(--sx), 1) rotate(var(--rot)) translate(calc(var(--u) * 0.9), calc(var(--u) * 1.3)) rotate(-8deg); }
+    40%, 55% { transform: scale(var(--sx), 1) rotate(var(--rot)) translate(0, 0) rotate(-8deg) scale(0.92); }
+  }
+  .hint--drag.is-on .hint__hand { animation-name: hint-drag; animation-duration: 2.2s; }
+  @keyframes hint-drag {
+    0%, 100% { transform: scale(var(--sx), 1) rotate(var(--rot)) translate(calc(var(--u) * 0.9), calc(var(--u) * 1.3)) rotate(-8deg); }
+    20% { transform: scale(var(--sx), 1) rotate(var(--rot)) translate(0, 0) rotate(-8deg) scale(0.92); }
+    60%, 72% { transform: scale(var(--sx), 1) rotate(var(--rot)) translate(calc(var(--u) * 1.2), calc(var(--u) * 3.4)) rotate(-8deg) scale(0.92); }
+  }
+  .hint__ring { position: absolute; left: calc(var(--u) * -1.9); top: calc(var(--u) * -1.9); width: calc(var(--u) * 3.8); height: calc(var(--u) * 3.8); border-radius: 50%; border: calc(var(--u) * 0.32) solid var(--color-primary); opacity: 0; }
+  .hint.is-on .hint__ring { animation: hint-ring 1.7s ease-out 0.2s infinite both; }
+  .hint--drag .hint__ring { display: none; }
+  @keyframes hint-ring {
+    0%, 42% { transform: scale(0.3); opacity: 0; }
+    48% { transform: scale(0.45); opacity: 0.9; }
+    100% { transform: scale(1.35); opacity: 0; }
+  }
+  .hint__label {
+    position: absolute; left: calc(var(--u) * 4.4); top: calc(var(--u) * 3.9); white-space: nowrap;
+    padding: calc(var(--u) * 0.55) calc(var(--u) * 1.1); border-radius: 999px;
+    background: #fff; color: var(--color-primary); border: calc(var(--u) * 0.16) solid var(--color-primary); box-shadow: 0 calc(var(--u) * 0.5) calc(var(--u) * 1.2) rgba(11,42,91,0.25);
+    font-weight: 900; font-size: calc(var(--u) * 1); letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .hint--l .hint__label { left: auto; right: calc(var(--u) * 4.4); }
+  .hint--up .hint__label { left: calc(var(--u) * 6.8); top: calc(var(--u) * -0.6); }
+  .hint--l.hint--up .hint__label { left: auto; right: calc(var(--u) * 6.8); }
+  @media (prefers-reduced-motion: reduce) {
+    .hint.is-on .hint__hand { animation: none; transform: scale(var(--sx), 1) rotate(var(--rot)) rotate(-8deg); }
+    .hint.is-on .hint__ring { animation: none; opacity: 0.6; transform: none; }
+  }
 
   /* ============================================================
      MODULE 2 · componentes nuevos
@@ -876,7 +936,7 @@
   .dnd { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.8cqh; }
   .dnd__tray { flex: none; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.9cqw; min-height: 15cqh; padding: 1cqw; border-radius: 1.6cqw; background: rgba(11,42,91,0.05); }
   .dnd__tray:empty { display: flex; align-items: center; justify-content: center; }
-  .dnd__tray:empty::before { content: "Todas las tarjetas están ubicadas. Tocá Check."; font-weight: 800; font-size: 1.15cqw; color: var(--color-primary); }
+  .dnd__tray:empty::before { content: "All cards are placed. Tap Check."; font-weight: 800; font-size: 1.15cqw; color: var(--color-primary); }
   .dnd__card {
     position: relative; display: block; border: none; text-align: left; cursor: grab;
     background: #fff; border-radius: 1.1cqw; padding: 1.5cqh 0.9cqw 1.5cqh 1.5cqw;
@@ -1566,6 +1626,240 @@
   .demo-mark { position: absolute; right: 3.6cqw; bottom: 0.75cqh; z-index: 22; pointer-events: none; user-select: none;
     font-weight: 800; font-size: 0.85cqw; letter-spacing: 0.06em; line-height: 1; color: var(--b-navy); opacity: 0.45; }
   .stage[data-chrome="none"] .demo-mark { color: #fff; opacity: 0.7; }
+
+  /* ============================================================
+     DEMO · MODO VERTICAL (celular y tablet chica en vertical)
+     El escenario 16:9 se reemplaza por una columna a pantalla
+     completa: barra arriba, dock abajo y el contenido of cada
+     pantalla apilado en el medio, con scroll si no entra. Acá las
+     medidas van en rem (el html fija la escala según el ancho del
+     teléfono) porque cqw/cqh dependen of la proporción 16:9.
+     Las ilustraciones con texto tienen una copia vertical (.pv-v,
+     armada en demo-portrait.js) y el original (.pv-h) se oculta.
+     ============================================================ */
+  /* !important: las reglas of cada ilustración (.route__map svg, etc.) le ganan por especificidad */
+  .pv-v, .pv-more { display: none !important; }
+
+  /* Celular en horizontal: el escenario ocupa toda la pantalla, sin marco */
+  @media (orientation: landscape) and (max-height: 520px) {
+    body { padding: 0; background: var(--b-navy); }
+    .stage { width: min(100vw, calc(100vh * 16 / 9)); width: min(100vw, calc(100dvh * 16 / 9)); border-radius: 0; box-shadow: none; }
+  }
+
+  @media (orientation: portrait) and (max-width: 820px) {
+    html { font-size: clamp(14px, 4.1vw, 17px); overscroll-behavior: none; }
+    body { padding: 0; background: var(--color-bg); }
+    .pv-h { display: none !important; }
+    .stage .pv-v { display: block !important; }
+
+    .stage {
+      width: 100vw; height: 100vh; height: 100dvh; aspect-ratio: auto;
+      border-radius: 0; box-shadow: none; font-size: 1rem;
+    }
+
+    /* Zona of contenido entre la barra y el dock; en tablet, columna centrada */
+    .slide__content {
+      inset: 3.5rem 0 5.1rem;
+      padding: 0.5rem max(1.1rem, calc((100% - 34rem) / 2)) 1.2rem;
+      overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 0.5rem, #000 calc(100% - 0.8rem), transparent);
+              mask-image: linear-gradient(to bottom, transparent 0, #000 0.5rem, #000 calc(100% - 0.8rem), transparent);
+    }
+    .slide__content::-webkit-scrollbar { display: none; }
+    .slide.is-entering [data-anim] { animation-name: pv-enter; }
+    @keyframes pv-enter { from { opacity: 0; transform: translateY(0.8rem); } to { opacity: 1; transform: none; } }
+
+    /* ---------- Tipografía y piezas comunes ---------- */
+    .b-eyebrow { font-size: 0.68rem; gap: 0.45rem; margin-bottom: 0.45rem; }
+    .b-eyebrow::before { width: 1.3rem; height: 3px; }
+    .b-title { font-size: 1.5rem; line-height: 1.05; margin-bottom: 0.6rem; }
+    .b-lead, .b-lead--wide { font-size: 0.92rem; line-height: 1.5; margin-bottom: 0.8rem; max-width: none; }
+    .b-row { flex-direction: column; align-items: flex-start; gap: 0; }
+    .b-hint { font-size: 0.7rem; gap: 0.4rem; margin-bottom: 0.7rem; }
+    .b-hint b { width: 1.35rem; height: 1.35rem; font-size: 0.66rem; }
+    .b-card { border-radius: 0.9rem; padding: 0.85rem 1rem; border-left-width: 4px; }
+    .b-card__k { font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .b-card__b { font-size: 0.86rem; }
+
+    .loop__ctrl { gap: 0.7rem; margin-top: 0.8rem; }
+    .loop__btn { font-size: 0.86rem; gap: 0.5rem; padding: 0.7rem 1rem 0.7rem 1.2rem; box-shadow: 0 4px 0 rgba(0,0,0,0.15); }
+    .loop__btn svg { width: 0.95rem; height: 0.95rem; }
+    .deck-dots { gap: 0.3rem; margin-left: 0.2rem; }
+    .deck-dots i { width: 0.5rem; height: 0.5rem; }
+    .deck-dots i.on { width: 1.4rem; }
+
+    /* Columna of texto + ilustración: el texto se "abre" para poder
+       intercalar la ilustración entre la consigna y la tarjeta */
+    .route, .cmp, .ice, .vals, .bias, .ripple { flex: none; display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+    .cmp > div:first-child, .ice__text { display: contents; }
+
+    /* ---------- Barra superior ---------- */
+    .shell-top { height: 3.5rem; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.8rem; padding: 0 1rem; }
+    .shell-logo { height: 2.1rem; padding: 0 0.6rem; }
+    .shell-course { display: none; }
+    .shell-progress { gap: 0.3rem; }
+    .shell-segs { display: flex; gap: 3px; }
+    .shell-seg { flex: 1; height: 5px; }
+    .shell-plabel { font-size: 0.66rem; }
+    .shell-plabel span { overflow: hidden; text-overflow: ellipsis; }
+    .shell-menu-btn { width: 2.4rem; height: 2.4rem; padding: 0; justify-content: center; font-size: 0; gap: 0; }
+    .shell-menu-btn svg { width: 1.1rem; height: 1.1rem; }
+
+    /* ---------- Dock ---------- */
+    .dock { left: 0.75rem; right: 0.75rem; bottom: 1.1rem; height: 3.6rem; gap: 0.5rem; padding: 0 0.4rem; }
+    .dock__back { width: 2.8rem; height: 2.8rem; }
+    .dock__track { margin: 0 0.9rem; }
+    .dock__stop { width: 7px; height: 7px; }
+    .dock__marker { width: 2.1rem; height: 2.1rem; box-shadow: 0 0 0 0.3rem rgba(255,255,255,0.18); }
+    .dock__cta { height: 2.8rem; gap: 0.4rem; padding: 0 0.9rem 0 1.1rem; font-size: 0.86rem; }
+    .dock__cta svg { width: 0.95rem; height: 0.95rem; }
+    .demo-mark { right: 1.2rem; bottom: 0.3rem; font-size: 0.55rem; }
+
+    /* Aviso of que la pantalla sigue más abajo (lo prende demo-portrait.js) */
+    .stage .pv-more { display: inline-flex !important; }
+    .pv-more {
+      position: absolute; left: 50%; bottom: 5.4rem; z-index: 20;
+      align-items: center; gap: 0.35rem; padding: 0.45rem 0.8rem 0.45rem 0.95rem;
+      border: none; border-radius: 99px; cursor: pointer;
+      font-family: var(--font-heading); font-weight: 900; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase;
+      background: var(--b-navy); color: #fff; box-shadow: 0 6px 18px rgba(11,42,91,0.3);
+      transform: translate(-50%, 0.6rem); opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .pv-more svg { width: 0.9rem; height: 0.9rem; animation: pv-bob 1.6s ease-in-out infinite; }
+    @keyframes pv-bob { 50% { transform: translateY(2px); } }
+    .pv-more.is-on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+    .toast.is-open ~ .pv-more { opacity: 0; pointer-events: none; }
+
+    /* ---------- Toast, pop-up e índice ---------- */
+    .toast { bottom: 5.3rem; width: calc(100% - 1.5rem); gap: 0.7rem; padding: 0.8rem 0.9rem; border-radius: 0.9rem; border-left-width: 4px; transform: translate(-50%, 1rem); }
+    .toast__icon { width: 2.2rem; height: 2.2rem; }
+    .toast__t { font-size: 0.92rem; margin-bottom: 0.1rem; }
+    .toast__b { font-size: 0.82rem; }
+
+    .sheet__card { width: calc(100% - 2rem); max-height: 80%; border-radius: 1.1rem; padding: 1.5rem 1.2rem 1.3rem; border-top-width: 6px; transform: translateY(1.2rem) scale(0.97); }
+    .sheet__close { top: 0.8rem; right: 0.8rem; width: 2.2rem; height: 2.2rem; }
+    .sheet__kick { font-size: 0.68rem; margin-bottom: 0.4rem; }
+    .sheet__t { font-size: 1.25rem; margin: 0 2.4rem 0.7rem 0; }
+    .sheet__b { font-size: 0.92rem; margin-bottom: 0.7rem; }
+    .sheet__ex { font-size: 0.86rem; padding: 0.8rem 0.9rem; border-radius: 0.8rem; margin-top: 0.7rem; }
+    .sheet__ex b { font-size: 0.66rem; }
+
+    .menu__panel { width: min(88%, 24rem); padding: 1.3rem 1.1rem 1.2rem; gap: 0.7rem; }
+    .menu__head h3 { font-size: 1.1rem; }
+    .menu__close { width: 2.2rem; height: 2.2rem; }
+    .menu__mod { border-radius: 0.9rem; padding: 0.7rem 0.8rem; }
+    .menu__mod-h { gap: 0.6rem; }
+    .menu__num { width: 1.8rem; height: 1.8rem; font-size: 0.8rem; }
+    .menu__name { font-size: 0.9rem; }
+    .menu__state { font-size: 0.58rem; padding: 0.25rem 0.5rem; }
+    .menu__links { margin: 0.5rem 0 0 2.4rem; gap: 0.15rem; }
+    .menu__links button { font-size: 0.86rem; padding: 0.35rem 0; }
+
+    /* ---------- Portada del módulo · mapa of ruta vertical ---------- */
+    .route__map { flex: none; height: auto; display: flex; justify-content: center; margin-top: 0.2rem; }
+    .route__map svg.pv-v { width: 100%; max-width: 25rem; height: auto; }
+
+    /* ---------- Equality ≠ equidad ---------- */
+    .cmp__toggle { order: 1; align-self: flex-start; gap: 0.2rem; padding: 0.25rem; margin: 0 0 0.8rem; }
+    .cmp__toggle button { font-size: 0.78rem; padding: 0.55rem 1rem; }
+    .cmp__art { order: 2; flex: none; width: 100%; height: auto; max-height: none; aspect-ratio: 600 / 440; border-radius: 1rem; }
+    .cmp__tag { left: 0.6rem; top: 0.6rem; font-size: 0.6rem; padding: 0.3rem 0.6rem; }
+    .cmp [data-cmp-card] { order: 3; margin-top: 0.8rem; }
+
+    /* ---------- Iceberg ---------- */
+    .ice .b-hint { margin-bottom: 0.6rem; }
+    .ice__box { order: 1; flex: none; width: 100%; height: auto; max-height: none; aspect-ratio: 1 / 0.98; border-radius: 1rem; margin-bottom: 0.8rem; }
+    .ice [data-ice-card] { order: 2; }
+    .ice__vis, .ice__hid { font-size: 0.68rem; padding: 0.28rem 0.6rem; }
+    .ice__hid { min-width: 2.2rem; min-height: 2.2rem; }
+    .ice__hid .q { font-size: 0.95rem; }
+    .ice__hid:hover { transform: translate(-50%, -50%); }
+    .ice__label { left: 0.7rem; font-size: 0.56rem; }
+    .ice__label--up { top: 0.6rem; }
+    .ice__label--down { top: calc(30.4% + 0.6rem); }
+    /* La fila of abajo no entra a lo ancho: se escalona */
+    .ice__hid:nth-of-type(6) { left: 36% !important; top: 77% !important; }
+    .ice__hid:nth-of-type(7) { left: 64% !important; top: 89% !important; }
+
+    /* ---------- Velos: tarjetas apiladas que se abren hacia abajo ---------- */
+    .veil { flex: none; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0; }
+    .veil__card { flex: none; border-radius: 1rem; scroll-margin: 1rem; }
+    .veil__in { position: relative; inset: auto; max-height: 4.6rem; overflow: hidden; padding: 0.9rem 1.1rem 1rem; border-top-width: 5px; transition: max-height 0.75s cubic-bezier(0.65,0,0.35,1); }
+    .veil__card.is-open .veil__in { max-height: 22rem; }
+    .veil__num { font-size: 0.68rem; }
+    .veil__w { font-size: 1.2rem; margin: 0.3rem 0 0.5rem; }
+    .veil__d { font-size: 0.88rem; }
+    .veil__tag { font-size: 0.68rem; padding: 0.35rem 0.7rem; margin-top: 0.7rem; }
+    .veil__cover { flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.9rem; padding: 0 1.1rem; }
+    .veil__cover .n { font-size: 2rem; }
+    .veil__cover .w { font-size: 1.1rem; }
+    .veil__cover .go { font-size: 0.7rem; gap: 0.4rem; margin-top: 0.3rem; }
+    .veil__cover .go b { width: 1.5rem; height: 1.5rem; }
+
+    /* ---------- Mini challenge: tarjetas en lista ---------- */
+    .pick { flex: none; margin: 0; display: flex; flex-direction: column; gap: 0.55rem; padding: 0.55rem; border-radius: 1.1rem; }
+    .pick__card { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 0.8rem; row-gap: 0.25rem; align-items: start; min-height: 0; padding: 0.85rem 2.6rem 0.85rem 0.85rem; border-radius: 0.9rem; }
+    .pick__card:hover:not([disabled]) { transform: none; }
+    .pick__ic { grid-column: 1; grid-row: 1 / span 3; width: 2.4rem; height: 2.4rem; border-radius: 0.7rem; }
+    .pick__t { font-size: 0.94rem; margin-top: 0; }
+    .pick__d { font-size: 0.82rem; }
+    .pick__check { top: 0.8rem; right: 0.8rem; width: 1.4rem; height: 1.4rem; border-radius: 0.4rem; }
+    .pick__fb { font-size: 0.8rem; padding-top: 0.5rem; margin-top: 0.3rem; }
+    .pick__fb b { font-size: 0.66rem; }
+    .pick__summary { margin-top: 0.7rem; scroll-margin: 0.6rem; }
+
+    /* ---------- What we gain from a diverse team ---------- */
+    .vals__list { flex-direction: row; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.8rem; }
+    .vals__list li { font-size: 0.78rem; gap: 0.4rem; padding: 0.25rem 0.7rem 0.25rem 0.25rem; border-radius: 99px; background: #fff; box-shadow: 0 2px 8px rgba(11,42,91,0.06); }
+    .vals__list i { width: 1.6rem; height: 1.6rem; }
+    .vals__but { font-size: 0.84rem; padding: 0.6rem 0.9rem; border-radius: 0.8rem; }
+    .vals__stats { gap: 0.6rem; margin-top: 1rem; }
+    .vals__stat { grid-template-columns: 4.6rem minmax(0, 1fr); gap: 0.8rem; padding: 0.9rem 1rem; border-radius: 1rem; transform: translateY(1rem); }
+    .vals__num { font-size: 2.1rem; }
+    .vals__k { font-size: 0.9rem; margin-bottom: 0.2rem; }
+    .vals__t { font-size: 0.8rem; }
+    .vals__src { font-size: 0.62rem; margin-top: 0.4rem; }
+    .vals__bars { gap: 0.3rem; margin-top: 0.5rem; }
+    .vals__bar { grid-template-columns: 6.2rem minmax(0, 1fr) 2.3rem; gap: 0.4rem; font-size: 0.66rem; }
+    .vals__bar .tr { height: 6px; }
+
+    /* ---------- Drag and drop: bandeja en dos columnas, zonas lado a lado ---------- */
+    .dnd { flex: none; justify-content: flex-start; gap: 0.7rem; }
+    .dnd__tray { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.45rem; min-height: 4rem; padding: 0.45rem; border-radius: 1rem; }
+    .dnd__tray:empty::before { font-size: 0.84rem; text-align: center; padding: 0.5rem; }
+    .dnd__card { font-size: 0.76rem; line-height: 1.35; padding: 0.55rem 0.55rem 0.55rem 0.95rem; border-radius: 0.7rem; }
+    .dnd__card::before { left: 0.35rem; top: 0.6rem; bottom: 0.6rem; width: 3px; }
+    .dnd__zones { gap: 0.5rem; }
+    .dnd__zone { gap: 0.5rem; padding: 0.6rem 0.5rem 0.5rem; border-radius: 1rem; }
+    .dnd__zt { font-size: 0.72rem; line-height: 1.3; }
+    .dnd__zt b { display: block; margin: 0 0 0.1rem; font-size: 0.8rem; }
+    .dnd__slots { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; min-height: 4.5rem; }
+    .dnd__done { grid-template-columns: minmax(0, 1fr); gap: 0.6rem; scroll-margin: 0.6rem; }
+    .dnd__ok { font-size: 0.9rem; gap: 0.5rem; margin-bottom: 0.7rem; }
+    .dnd__ok b { width: 1.5rem; height: 1.5rem; font-size: 0.8rem; }
+    .dnd__barrier .loop__btn { font-size: 0.8rem; padding: 0.6rem 0.9rem 0.6rem 1.1rem; margin-top: 0.7rem; }
+    .dnd__quote { scroll-margin: 0.6rem; }
+    .dnd__say { font-size: 1rem; padding: 0.5rem 0.8rem; border-radius: 0.8rem 0.8rem 0.8rem 0.2rem; margin-bottom: 0.4rem; }
+
+    /* ---------- What is a bias? ---------- */
+    /* El botón of avanzar va pegado a la ilustración: en pantallas bajas,
+       debajo of la tarjeta quedaría fuera of la vista en cada paso */
+    .bias .loop__ctrl, .ripple .loop__ctrl { order: 2; margin: 0 0 0.8rem; }
+    .bias__art { order: 1; padding: 0.7rem 0.5rem; border-radius: 1rem; margin-bottom: 0.8rem; }
+    .bias [data-bias-card] { order: 3; min-height: 7.6rem; }
+
+    /* ---------- It starts with me ---------- */
+    .ripple__art { order: 1; flex: none; align-self: center; width: min(100%, 21rem, 44vh); width: min(100%, 21rem, 44dvh); height: auto; max-height: none; margin-bottom: 0.7rem; }
+    .ripple [data-ripple-card] { order: 3; min-height: 6.6rem; }
+    .ripple__end { font-size: 0.84rem; margin-top: 0.6rem; padding-top: 0.6rem; }
+  }
+
+  /* Pista "Tap here" (components.css): en vertical se mide en rem, no en cqw */
+  @media (orientation: portrait) and (max-width: 820px) {
+    .hint { --u: 0.5rem; }
+    .hint__label { font-size: 0.66rem; padding: 0.3rem 0.65rem; }
+  }
 </style>
 </head>
 <body>
@@ -1691,7 +1985,7 @@
       </div>
       <div class="pick" role="group" aria-label="Situations: select all that apply" data-pick data-anim style="animation-delay:0.26s"></div>
       <div class="b-card pick__summary" data-pick-summary style="--acc: var(--color-correct-border)" aria-live="polite">
-        <p class="b-card__b"><strong>Correct! All four involve DEI.</strong> Almost any decision about how we treat, listen to, include or offer opportunities to people can involve DEI.</p>
+        <p class="b-card__b"><strong>Correct! All three involve DEI.</strong> Almost any decision about how we treat, listen to, include or offer opportunities to people can involve DEI.</p>
       </div>
     </div>
   </div>
@@ -1935,6 +2229,15 @@
     </aside>
   </div>
 
+    <div class="gate" data-gate hidden>
+      <div class="gate__box">
+        <span class="gate__ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></span>
+        <p class="gate__t">Este curso tiene audio</p>
+        <p class="gate__d">Activá el sonido of tu equipo para escuchar las locuciones.</p>
+        <button class="gate__btn" type="button" data-gate-start>Start demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></button>
+      </div>
+    </div>
+
   <div class="demo-mark" aria-hidden="true">Demo · APLearning</div>
   <audio id="narration-audio" style="display:none"></audio>
  </div>
@@ -1998,7 +2301,7 @@
     42: { base: 'No necesito tener una posición of liderazgo para respetar la diversidad, promover la equidad y generar inclusión. Mirá hasta dónde llega.' },
     43: { base: 'Pensá en tu día a día: ¿ya lo hacés o podés mejorar? Nadie más ve tus respuestas.' },
     44: { base: 'Promovemos el respeto, la equidad y los espacios libres of discriminación. Y ante una situación inadecuada: observá, pausá, intervení y, si hace falta, escalá a tu jefe, a Recursos Humanos o a la línea ética.' },
-    45: { base: 'Elegí tres comportamientos que te comprometés a incorporar y confirmá tu compromiso.' },
+    45: { base: 'Choose three comportamientos que te comprometés a incorporar y confirmá tu compromiso.' },
     46: { base: 'Diversidad es quiénes somos. Equity es garantizar oportunidades justas. Inclusión es lo que hacemos para que todas las personas puedan participar y sentirse parte. Sé parte del cambio: cada acción cuenta.' },
     47: { base: 'La cultura se construye en cada interacción. Completaste los seis módulos: ahora, una evaluación breve of cinco preguntas para repasar lo aprendido.' },
     48: { base: 'Final assessment. Pregunta 1 of 5. Elegí una respuesta y tocá Check. Tenés una sola oportunidad.' },
@@ -2096,8 +2399,11 @@
     META.forEach(function (m, i) { m.t = demoTitles[i]; NARRATIONS[i] = { base: demoTitles[i] }; });
   })(); } catch (e) { DEMO_SKIPPED.push(e.message); }
 
-  /* Videos: cuando estén los MP4, poner la ruta relativa (ej. 'video1.mp4') */
-  var VIDEOS = { v1: '', v2: '' };
+  /* Videos y locuciones: build.py completa las rutas en la versión web object
+     (WebObject/) solo para los archivos que ya están en video/ y audio/.
+     AUDIO = índice of slide → ruta del MP3. */
+  var VIDEOS = /*{{VIDEO_MAP}}*/{ v1: '', v2: '' };
+  var AUDIO = /*{{AUDIO_MAP}}*/{};
 
   /* ============================================================
      RECURSOS (imágenes embebidas en el build)
@@ -2162,6 +2468,16 @@
   var current = -1;
   var enterTimer = null;
   var narrationAudio = document.getElementById('narration-audio');
+  /* Si el navegador bloquea el autoplay (todavía no hubo un clic dentro del
+     web object), la locución arranca con la primera interacción. */
+  function playNarration() {
+    var p = narrationAudio.play();
+    if (p && p.catch) p.catch(function () {
+      document.addEventListener('pointerdown', function retry() {
+        if (narrationAudio.getAttribute('src') && narrationAudio.paused) narrationAudio.play().catch(function () {});
+      }, { once: true, capture: true });
+    });
+  }
   var solved = {};        /* actividades resueltas por índice of slide */
   var GATES = {};         /* REQUIRE_FULL_VIEW: idx → función que dice si ya se vio todo */
   var finished = false;
@@ -2320,11 +2636,160 @@
   }
 
   /* ============================================================
+     PISTA "TOCÁ ACÁ" · mano animada (pedido del cliente, 2026-10-30)
+     En las pantallas para descubrir, una mano señala dónde tocar
+     cuando termina la locución (sin audio: a los 2 s). Se va con la
+     primera interacción y no vuelve en esa pantalla. Va adentro de
+     .slide__content para acompañar el scroll del modo vertical (demo).
+     HINTS: data-slide (desde la portada of M4 va uno menos que el
+     índice, desde M6 dos menos) → selector of lo que se toca (se señala el
+     primero que sigue sin ver), etiqueta, modo ('drag' = arrastrar) y
+     hover (la pantalla se descubre también pasando el cursor).
+     ============================================================ */
+  var HINTS = {
+    2:  { sel: '.acc__card', label: 'Discover it', hover: true },
+    3:  { sel: '.dei__opt' },
+    4:  { sel: '[data-mode]' },
+    5:  { sel: '.ice__hid', label: 'Discover it', hover: true },
+    6:  { sel: '.dim__node' },
+    7:  { sel: '.resp__role' },
+    9:  { sel: '.veil__cover' },
+    10: { sel: '[data-loop-next]' },
+    13: { sel: '.prof__card' },
+    16: { sel: '.myth__card' },
+    17: { sel: '.lane__row' },
+    18: { sel: '.dnd__card', label: 'Drag', mode: 'drag' },
+    19: { sel: '[data-deck-next]' },
+    20: { sel: '.dei__opt' },
+    22: { sel: '.sexg__card' },
+    23: { sel: '[data-ident-next]' },
+    24: { sel: '.expr__hot' },
+    25: { sel: '[data-sexd-next]' },
+    26: { sel: '[data-lgbt-next]' },
+    27: { sel: '.disc__hot' },
+    28: { sel: '.lang__b' },
+    29: { sel: '.cult__tab' },
+    30: { sel: '[data-deck-next]' },
+    32: { sel: '[data-bias-next]' },
+    34: { sel: '.flip__card' },
+    35: { sel: '[data-ster-next]' },
+    36: { sel: '[data-prej-next]' },
+    37: { sel: '.micro__b' },
+    38: { sel: '[data-act-next]' },
+    40: { sel: '[data-ripple-next]' },
+    42: { sel: '.dei__opt' },
+    43: { sel: '.pledge__card', label: 'Choose three' }
+  };
+  /* Mano en el estilo of los personajes: contorno continuo, relleno plano y
+     una sombra suave. Las piezas se dibujan dos times (trazo grueso abajo,
+     relleno arriba) para que el contorno sea uno solo. La palma incluye el pulgar,
+     cuyo borde exterior baja en una sola línea hasta la muñeca. Punta del índice:
+     (20, 3). Copia editable en _src/mano-pista.svg. */
+  var HAND_PARTS =
+    '<rect x="14" y="2" width="12" height="38" rx="6"/>' +
+    '<rect x="24" y="23" width="12" height="21" rx="6"/>' +
+    '<rect x="34" y="26" width="11" height="20" rx="5.5"/>' +
+    '<rect x="43" y="30" width="10" height="18" rx="5"/>' +
+    '<path d="M20 38 H53 V54 Q53 66 41 66 H28 Q24 66 21 63 L4 46 A5 5 0 0 1 11 39 Q14.5 42.5 14 34 V32 H20 Z"/>';
+  var HAND_SVG = '<svg viewBox="0 0 64 76" aria-hidden="true">' +
+    '<g fill="var(--b-ink)" stroke="var(--b-ink)" stroke-width="5" stroke-linejoin="round">' + HAND_PARTS + '<rect x="20" y="62" width="28" height="12" rx="3"/></g>' +
+    '<g fill="#fff">' + HAND_PARTS + '</g>' +
+    '<path d="M20 58 Q23 64 28 64 H41 Q51 64 51 56 Q44 61 33 61 Q25 61 20 58 Z" fill="#DCE6F3"/>' +
+    '<g fill="none" stroke="var(--b-ink)" stroke-width="2.2" stroke-linecap="round"><path d="M26 30 V40"/><path d="M36 34 V43"/><path d="M45 37 V45"/></g>' +
+    '<rect x="20" y="62" width="28" height="12" rx="3" fill="var(--color-primary)"/>' +
+    '<path d="M24 66 H44" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-linecap="round"/></svg>';
+  var hintEl = document.createElement('div');
+  hintEl.className = 'hint';
+  hintEl.setAttribute('aria-hidden', 'true');
+  hintEl.innerHTML = '<span class="hint__ring"></span><span class="hint__hand">' + HAND_SVG + '</span><span class="hint__label"></span>';
+  var hintDone = {};
+  var hintTarget = null, hintTimer = null;
+
+  function hintCandidate(slide, cfg) {
+    var list = slide.querySelectorAll(cfg.sel);
+    for (var k = 0; k < list.length; k++) {
+      var e = list[k], r = e.getBoundingClientRect();
+      if (!r.width || e.disabled || e.classList.contains('is-seen') || e.classList.contains('is-placed') ||
+          e.getAttribute('aria-pressed') === 'true' || e.getAttribute('aria-expanded') === 'true' || e.getAttribute('aria-selected') === 'true') continue;
+      return e;
+    }
+    return null;
+  }
+  function placeHint() {
+    if (!hintTarget || !hintEl.parentNode) return;
+    var box = hintEl.parentNode, rb = box.getBoundingClientRect(), rt = hintTarget.getBoundingClientRect();
+    /* el escenario puede estar escalado: se pasa todo a píxeles del contenedor */
+    var k = box.offsetWidth / rb.width || 1;
+    var x = (rt.left + rt.width / 2 - rb.left) * k + box.scrollLeft;
+    var y = (rt.top + rt.height / 2 - rb.top) * k + box.scrollTop;
+    hintEl.style.left = x + 'px';
+    hintEl.style.top = y + 'px';
+    /* cerca del borde derecho la mano entra por la izquierda; pegada al dock, desde arriba */
+    hintEl.classList.toggle('hint--l', x > box.clientWidth * 0.74);
+    hintEl.classList.toggle('hint--up', y - box.scrollTop > box.clientHeight * 0.72);
+  }
+  function hideHint() {
+    clearInterval(hintTimer); hintTimer = null;
+    hintTarget = null;
+    hintEl.classList.remove('is-on');
+    if (hintEl.parentNode) hintEl.parentNode.removeChild(hintEl);
+  }
+  function startHint(i) {
+    hideHint();
+    var slide = SLIDES[i], id = slide.getAttribute('data-slide'), cfg = HINTS[id];
+    if (!cfg || hintDone[id]) return;
+    var t0 = Date.now();
+    hintTimer = setInterval(function () {
+      var waited = Date.now() - t0;
+      if (waited < 2000) return;
+      var g = stage.querySelector('[data-gate]');
+      if (g && !g.hidden) return;
+      /* espera a que termine la locución (o a que esté pausada o bloqueada) */
+      var a = narrationAudio;
+      if (a.getAttribute('src') && !a.ended && !a.error && !(a.paused && waited > 3000)) return;
+      clearInterval(hintTimer); hintTimer = null;
+      var target = hintCandidate(slide, cfg);
+      if (!target) return;
+      hintTarget = target;
+      hintEl.querySelector('.hint__label').textContent = cfg.label || 'Tap here';
+      hintEl.classList.toggle('hint--drag', cfg.mode === 'drag');
+      slide.querySelector('.slide__content').appendChild(hintEl);
+      placeHint();
+      void hintEl.offsetWidth;
+      hintEl.classList.add('is-on');
+    }, 250);
+  }
+  /* Cualquier interacción con la pantalla (tocar, pasar el cursor por lo que
+     se descubre o llegar con el teclado) cierra la pista para siempre. */
+  function hintInteract(e) {
+    var slide = SLIDES[current];
+    if (!slide || !slide.contains(e.target)) return;
+    var id = slide.getAttribute('data-slide'), cfg = HINTS[id];
+    if (!cfg) return;
+    if (e.type === 'pointerover' && !cfg.hover) return;
+    var hit = e.target.closest(cfg.sel);
+    if (e.type === 'pointerdown') hit = hit || e.target.closest('button, [role="button"], [draggable="true"]');
+    if (!hit) return;
+    hintDone[id] = true;
+    hideHint();
+  }
+  stage.addEventListener('pointerdown', hintInteract, true);
+  stage.addEventListener('pointerover', hintInteract, true);
+  stage.addEventListener('focusin', hintInteract, true);
+  window.addEventListener('resize', placeHint);
+
+  /* ============================================================
      NAVEGACIÓN REAL DEL CURSO
      ============================================================ */
   function showSlide(i) {
     if (i < 0 || i >= TOTAL) return;
-    if (current >= 0) SLIDES[current].classList.remove('is-active', 'is-entering');
+    if (current >= 0) {
+      SLIDES[current].classList.remove('is-active', 'is-entering');
+      /* Lo que estaba sonando no sigue en la pantalla nueva */
+      Array.prototype.forEach.call(SLIDES[current].querySelectorAll('video'), function (v) { v.pause(); });
+    }
+    narrationAudio.pause();
+    narrationAudio.removeAttribute('src');
     current = i;
     var slide = SLIDES[i];
     slide.classList.add('is-active');
@@ -2338,11 +2803,13 @@
     closeSheet();
     renderChrome(i);
     if (slide.onEnter) slide.onEnter();
+    startHint(i);
 
     setNarration(NARRATIONS[i].base);
-    if (NARRATIONS[i].audioSrc) {
-      narrationAudio.src = NARRATIONS[i].audioSrc;
-      narrationAudio.play();
+    var audioSrc = NARRATIONS[i].audioSrc || AUDIO[i];
+    if (audioSrc) {
+      narrationAudio.src = audioSrc;
+      playNarration();
     }
   }
 
@@ -2852,6 +3319,7 @@
       var msg = root.querySelector('[data-vid-msg]');
       play.addEventListener('click', function () {
         if (!VIDEOS[key]) { msg.classList.add('is-on'); return; }
+        narrationAudio.pause();
         var v = document.createElement('video');
         v.src = VIDEOS[key]; v.controls = true; v.autoplay = true; v.setAttribute('playsinline', '');
         frame.appendChild(v); play.remove(); poster.remove();
@@ -2989,8 +3457,7 @@
     var ICONS = [
       '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>',
       '<rect x="3" y="4" width="18" height="12" rx="2"/><line x1="12" y1="16" x2="12" y2="20"/><line x1="8" y1="20" x2="16" y2="20"/>',
-      '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
-      '<rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/>'
+      '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>'
     ];
     var DATA = [
       { t: 'Shift briefing', d: 'The supervisor always asks the same two people for their opinions.', acc: 'orange',
@@ -2998,11 +3465,9 @@
       { t: 'Training on a new system', d: 'A 58-year-old colleague is excluded from self-checkout training because “it will be too hard for him”.', acc: 'teal',
         tag: 'Age bias', fb: 'Assuming what someone can learn based on age takes away an opportunity.' },
       { t: 'Team WhatsApp group', d: 'A meme mocking a colleague’s regional accent is shared.', acc: 'green',
-        tag: 'Culturel diversity · respect online', fb: 'Respect matters in digital spaces too.' },
-      { t: 'Shift schedule', d: 'The schedule is set without asking about study or caring responsibilities.', acc: 'magenta',
-        tag: 'Equity: different needs', fb: 'Identical rules can exclude people with different needs.' }
+        tag: 'Culturel diversity · respect online', fb: 'Respect matters in digital spaces too.' }
     ];
-    var CORRECT = [0, 1, 2, 3];
+    var CORRECT = [0, 1, 2];
     var cards = DATA.map(function (d, i) {
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'pick__card'; b.setAttribute('role', 'checkbox'); b.setAttribute('aria-checked', 'false');
@@ -4275,7 +4740,7 @@
         ic: '<circle cx="8" cy="8" r="3.2"/><circle cx="16" cy="8" r="3.2"/><path d="M2 20c0-3.3 2.7-6 6-6 1.6 0 3 .6 4 1.6 1-1 2.4-1.6 4-1.6 3.3 0 6 2.7 6 6"/>',
         back: '<p class="flip__quote">“Me llevo mejor con personas como yo.”</p>' +
           '<p class="flip__lab">Puede generar</p><p class="flip__chain"><span>Preferencia</span>' + ARROW + '<span>Cercanía</span>' + ARROW + '<span>Oportunidad</span></p>' +
-          '<p class="deck__ex"><b>En el día a día</b>Siempre invitás a las mismas personas a cubrir un puesto nuevo, y otras nunca tienen la chance.</p>' },
+          '<p class="deck__ex"><b>En el día a día</b>Siempre invitás a las mismas personas a trabajar con vos o elegir un nuevo puesto.</p>' },
       { t: 'Sesgo of confirmación', acc: 'orange',
         ic: '<circle cx="10.5" cy="10.5" r="6.5"/><line x1="21" y1="21" x2="15.2" y2="15.2"/><polyline points="7.5 10.5 9.8 12.8 13.5 8.8"/>',
         back: '<p class="flip__quote">Buscamos información que confirme lo que ya pensamos.</p>' +
@@ -4400,7 +4865,7 @@
       { txt: 'basado exclusivamente en su pertenencia a una determinada categoría social', acc: 'orange',
         k: 'La categoría habla por la persona',
         b: 'El juicio no sale of lo que la persona hace, sino del grupo al que creemos que pertenece: su edad, su origen, su género o su religión.',
-        ex: '<p class="deck__ex"><b>En el día a día</b>“Es del interior, no va a entender el sistema nuevo.”</p>' },
+        ex: '<p class="deck__ex"><b>En el día a día</b>“Es of otro país. No va a entenderlo.”<br>“Es mujer (u hombre), no va a lograr la tarea.”</p>' },
       { txt: 'formado sin un examen real of los hechos', acc: 'cyan',
         k: 'Nadie lo comprobó',
         b: 'No se basa en hechos: se forma sin conocer ni observar a la persona.',
@@ -4672,7 +5137,12 @@
       if (n === ITEMS.length) {
         var yes = ans.filter(function (a) { return a === 0; }).length;
         var grow = ITEMS.filter(function (it, i) { return ans[i] === 1; }).map(function (it) { return it[0].replace(/\.$/, '').toLowerCase(); });
-        res.querySelector('.b-card__k').textContent = '¡Muy bien! Ya hacés ' + yes + ' of los 6 comportamientos.';
+        var msg = yes === 0
+          ? 'Todavía no incorporaste ninguno of los 6 comportamientos. ¡Es un buen punto of partida para crecer!'
+          : yes === 6
+            ? '¡Excelente! Ya hacés los 6 comportamientos inclusivos.'
+            : '¡Bien! Ya hacés ' + yes + ' of los 6 comportamientos.';
+        res.querySelector('.b-card__k').textContent = msg;
         res.querySelector('[data-mine-b]').textContent = grow.length
           ? 'Para seguir trabajando: ' + grow.join(', ') + '. En la próxima pantalla vas a poder convertirlo en un compromiso.'
           : 'Sostenerlos todos los días es lo que construye una cultura inclusiva. En la próxima pantalla vas a elegir cuáles reforzar.';
@@ -4995,9 +5465,193 @@
   /* DEMO: la última pantalla cierra el recorrido (sin evaluación) */
   if (!stage.querySelector('[data-activity="finish"], [data-res]')) SLIDES[TOTAL - 1].setAttribute('data-activity', 'finish');
 
+
+  /* ============================================================
+     DEMO · MODO VERTICAL (ver demo-portrait.css)
+     Las ilustraciones con texto se dibujan para 16:9 y a ancho de
+     celular su texto queda en 8 px: cada una tiene acá una copia
+     pensada para vertical (.pv-v) que sigue el estado del original.
+     ============================================================ */
+  var PORTRAIT = window.matchMedia('(orientation: portrait) and (max-width: 820px)');
+
+  /* Pone la copia junto al original: el CSS muestra una u otra según la orientación */
+  function pvPair(orig, copy) {
+    orig.classList.add('pv-h');
+    copy.setAttribute('class', (orig.getAttribute('class') || '').replace('pv-h', 'pv-v'));
+    if (orig.getAttribute('aria-label')) copy.setAttribute('aria-label', orig.getAttribute('aria-label'));
+    copy.setAttribute('role', 'img');
+    orig.parentNode.insertBefore(copy, orig.nextSibling);
+    return copy;
+  }
+
+  /* Mapa of ruta: las paradas bajan en zigzag (el módulo actual queda arriba,
+     a la vista sin scroll) y los nombres quedan a la derecha */
+  Array.prototype.forEach.call(stage.querySelectorAll('svg[data-route]'), function (orig) {
+    var P = [[44, 40], [80, 104], [44, 168], [80, 232], [44, 296], [80, 360], [44, 424]];
+    var CUR = +orig.getAttribute('data-route');
+    var svg = pvPair(orig, svgEl('svg', { viewBox: '0 0 440 460' }));
+    var d = 'M' + P[0][0] + ' ' + P[0][1];
+    for (var k = 0; k < P.length - 1; k++) {
+      var p0 = P[k - 1] || P[k], p1 = P[k], p2 = P[k + 1], p3 = P[k + 2] || p2;
+      d += ' C' + (p1[0] + (p2[0] - p0[0]) / 6) + ' ' + (p1[1] + (p2[1] - p0[1]) / 6) + ' ' + (p2[0] - (p3[0] - p1[0]) / 6) + ' ' + (p2[1] - (p3[1] - p1[1]) / 6) + ' ' + p2[0] + ' ' + p2[1];
+    }
+    svg.appendChild(svgEl('path', { d: d, fill: 'none', stroke: 'rgba(11,42,91,0.12)', 'stroke-width': 24, 'stroke-linecap': 'round' }));
+    svg.appendChild(svgEl('path', { d: d, fill: 'none', stroke: '#ffffff', 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-dasharray': '2 13' }));
+    MODS.slice(1).forEach(function (m, k) {
+      var x = P[k][0], y = P[k][1];
+      var col = 'var(--dei-' + m.acc + ')';
+      var g = svgEl('g', {});
+      if (k === CUR) {
+        g.appendChild(svgEl('circle', { 'class': 'route__pulse', cx: x, cy: y, r: 26, style: 'fill:' + col }));
+        g.appendChild(svgEl('circle', { cx: x, cy: y, r: 26, style: 'fill:' + col + ';stroke:#fff;stroke-width:5' }));
+      } else if (k < CUR) {
+        g.appendChild(svgEl('circle', { cx: x, cy: y, r: 22, style: 'fill:' + col + ';stroke:#fff;stroke-width:4' }));
+      } else {
+        g.appendChild(svgEl('circle', { cx: x, cy: y, r: 22, style: 'fill:#fff;stroke:' + col + ';stroke-width:4' }));
+      }
+      if (k === 6) {
+        var star = svgEl('g', { transform: 'translate(' + (x - 11) + ' ' + (y - 11) + ') scale(0.92)', style: 'color:' + (k <= CUR ? '#fff' : col) });
+        star.innerHTML = I.star.replace('<svg ', '<svg width="24" height="24" ');
+        g.appendChild(star);
+      } else {
+        g.appendChild(svgEl('text', { x: x, y: y + 7, 'text-anchor': 'middle', style: 'font-weight:900;font-size:20px;fill:' + (k <= CUR ? '#fff' : col) }, String(k + 1)));
+      }
+      /* Sin cartel "You are here" (no hay lugar al costado): lo dice la etiqueta */
+      var lx = 124, lab = (k === 6 ? 'FINISH' : 'MODULE ' + (k + 1)) + (k === CUR ? ' · YOU ARE HERE' : '');
+      g.appendChild(svgEl('text', { x: lx, y: y - 6, style: 'font-weight:800;font-size:13px;letter-spacing:.12em;fill:' + (k === CUR ? 'var(--color-brand-red)' : 'rgba(20,33,61,0.5)') }, lab));
+      g.appendChild(svgEl('text', { x: lx, y: y + 16, style: 'font-weight:900;font-size:18px;fill:' + (k === CUR ? 'var(--b-ink)' : 'rgba(20,33,61,0.65)') }, m.s));
+      svg.appendChild(g);
+    });
+  });
+
+  /* What is a bias?: el mismo diagrama, más compacto y con letra más grande */
+  try { (function () {
+    var orig = stage.querySelector('[data-bias-svg]');
+    if (!orig) return;
+    var svg = pvPair(orig, svgEl('svg', { viewBox: '0 0 520 312', 'data-bias-svg': '' }));
+    svg.innerHTML =
+      '<defs>' +
+        '<marker id="pv-ah-s" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="3.4" markerHeight="3.4" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--dei-magenta)"/></marker>' +
+        '<marker id="pv-ah-a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="3.8" markerHeight="3.8" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--color-correct-border)"/></marker>' +
+      '</defs>' +
+      '<g class="bias__alt">' +
+        '<path d="M122 206 Q260 364 398 206" fill="none" style="stroke:var(--color-correct-border)" stroke-width="5" stroke-dasharray="10 9" stroke-linecap="round" marker-end="url(#pv-ah-a)"/>' +
+        '<rect x="125" y="262" width="270" height="42" rx="21" fill="#fff" style="stroke:var(--color-correct-border)" stroke-width="3"/>' +
+        '<text x="260" y="290" text-anchor="middle" style="font-weight:900;font-size:19px;letter-spacing:.08em;fill:var(--color-correct-text)">PAUSE AND REFLECT</text>' +
+      '</g>' +
+      '<g class="bias__s">' +
+        '<path d="M122 124 Q260 -6 398 124" fill="none" style="stroke:var(--dei-magenta)" stroke-width="8" stroke-linecap="round" marker-end="url(#pv-ah-s)"/>' +
+        '<rect x="106" y="38" width="308" height="46" rx="23" style="fill:var(--dei-magenta)"/>' +
+        '<path transform="translate(140 46) scale(1.25)" d="M0 0 l-8 13 h7 l-2 11 l9 -14 h-7 z" fill="#fff"/>' +
+        '<text x="272" y="68" text-anchor="middle" style="font-weight:900;font-size:20px;letter-spacing:.08em;fill:#fff">AUTOMATIC SHORTCUT</text>' +
+      '</g>' +
+      '<g class="bias__a">' +
+        '<circle cx="74" cy="165" r="54" fill="#fff" style="stroke:var(--b-navy)" stroke-width="4"/>' +
+        '<g transform="translate(48 139) scale(2.17)" fill="none" style="stroke:var(--b-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></g>' +
+        '<text x="74" y="246" text-anchor="middle" style="font-weight:900;font-size:18px;letter-spacing:.06em;fill:var(--b-ink)">INFORMATION</text>' +
+      '</g>' +
+      '<g class="bias__d">' +
+        '<circle cx="446" cy="165" r="54" fill="#fff" style="stroke:var(--b-navy)" stroke-width="4"/>' +
+        '<g transform="translate(420 139) scale(2.17)" fill="none" style="stroke:var(--b-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V3"/><path d="M5 4h12l-2.5 4.5L17 13H5"/></g>' +
+        '<text x="446" y="246" text-anchor="middle" style="font-weight:900;font-size:18px;letter-spacing:.06em;fill:var(--b-ink)">DECISION</text>' +
+      '</g>';
+    new MutationObserver(function () {
+      svg.setAttribute('class', orig.getAttribute('class').replace('pv-h', 'pv-v'));
+    }).observe(orig, { attributes: true, attributeFilter: ['class'] });
+  })(); } catch (e) { DEMO_SKIPPED.push(e.message); }
+
+  /* It starts with me: mismos círculos, etiquetas más grandes */
+  try { (function () {
+    var orig = stage.querySelector('[data-ripple-svg]');
+    if (!orig) return;
+    var svg = orig.cloneNode(true);
+    svg.removeAttribute('data-ripple-svg');
+    pvPair(orig, svg);
+    Array.prototype.forEach.call(svg.querySelectorAll('g.ripple__on'), function (g) {
+      var rect = g.querySelector('rect'), text = g.querySelector('text');
+      if (!rect || !text) return;
+      var cy = +text.getAttribute('y') - 5, w = text.textContent.length * 13 + 32;
+      rect.setAttribute('x', 250 - w / 2); rect.setAttribute('width', w);
+      rect.setAttribute('y', cy - 18); rect.setAttribute('height', 36); rect.setAttribute('rx', 18);
+      text.setAttribute('y', cy + 6.5); text.style.fontSize = '19px';
+    });
+    var yo = svg.querySelector('text.ripple__off');
+    if (yo) yo.style.fontSize = '20px';
+    var from = orig.querySelectorAll('.ripple__ring'), to = svg.querySelectorAll('.ripple__ring');
+    new MutationObserver(function () {
+      Array.prototype.forEach.call(from, function (g, k) { to[k].setAttribute('class', g.getAttribute('class')); });
+    }).observe(orig, { attributes: true, attributeFilter: ['class'], subtree: true });
+  })(); } catch (e) { DEMO_SKIPPED.push(e.message); }
+
+  /* En vertical el contenido puede ser más alto que la pantalla: cada pantalla
+     arranca arriba y lo que aparece al resolver una actividad se trae a la vista */
+  function pvContent() { return SLIDES[current] && SLIDES[current].querySelector('.slide__content'); }
+  var pvShowSlide = showSlide;
+  showSlide = function (i) {
+    pvShowSlide(i);
+    var content = pvContent();
+    if (content) content.scrollTop = 0;
+    pvMore();
+  };
+
+  /* "See more": aparece mientras la pantalla tenga contenido debajo del borde */
+  var more = document.createElement('button');
+  more.type = 'button'; more.className = 'pv-more';
+  more.tabIndex = -1; more.setAttribute('aria-hidden', 'true');  /* ayuda visual: con teclado o lector se recorre igual */
+  more.innerHTML = 'See more<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+  stage.appendChild(more);
+  function pvMore() {
+    var c = pvContent();
+    more.classList.toggle('is-on', !!c && PORTRAIT.matches && c.scrollHeight - c.clientHeight - c.scrollTop > 24);
+  }
+  more.addEventListener('click', function () {
+    var c = pvContent();
+    if (c) c.scrollBy({ top: c.clientHeight * 0.7, behavior: 'smooth' });
+  });
+  /* El contenido cambia of alto al resolver actividades: se mira a los hijos, no a la caja */
+  var pvResize = window.ResizeObserver ? new ResizeObserver(pvMore) : null;
+  SLIDES.forEach(function (s) {
+    var c = s.querySelector('.slide__content');
+    if (!c) return;
+    c.addEventListener('scroll', pvMore, { passive: true });
+    if (pvResize) Array.prototype.forEach.call(c.children, function (k) { pvResize.observe(k); });
+  });
+  window.addEventListener('resize', pvMore);
+  var PV_REVEAL = [
+    { sel: '.veil__card', cls: 'is-open', delay: 800, block: 'nearest', el: function (n) { return n; } },
+    { sel: '.pick__summary', cls: 'is-on', delay: 120, block: 'nearest', el: function (n) { return n; } },
+    { sel: '.dnd', cls: 'is-solved', delay: 120, block: 'start', el: function (n) { return n.querySelector('.dnd__done'); } },
+    { sel: '.dnd__barrier', cls: 'is-revealed', delay: 120, block: 'nearest', el: function (n) { return n.querySelector('.dnd__quote'); } }
+  ];
+  new MutationObserver(function (list) {
+    if (!PORTRAIT.matches) return;
+    list.forEach(function (m) {
+      var n = m.target;
+      PV_REVEAL.forEach(function (r) {
+        if (!n.matches(r.sel) || !n.classList.contains(r.cls) || (' ' + (m.oldValue || '') + ' ').indexOf(' ' + r.cls + ' ') > -1) return;
+        var el = r.el(n);
+        if (el) setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: r.block }); }, r.delay);
+      });
+    });
+  }).observe(stage, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
+
   /* Revisión interna: #s=N abre directamente la pantalla N */
   var qaJump = location.hash.match(/s=(\d+)/);
-  showSlide(qaJump ? Math.min(+qaJump[1], TOTAL - 1) : 0);
+  var startAt = qaJump ? Math.min(+qaJump[1], TOTAL - 1) : 0;
+  var gate = stage.querySelector('[data-gate]');
+  showSlide(startAt);
+  if (AUDIO[startAt]) {
+    /* Con locuciones (web object): la portada queda detrás of un blur hasta el
+       clic of inicio, que habilita el audio en el navegador */
+    narrationAudio.pause();
+    gate.hidden = false;
+    gate.querySelector('[data-gate-start]').addEventListener('click', function () {
+      gate.classList.add('is-out');
+      setTimeout(function () { gate.hidden = true; }, 450);
+      narrationAudio.currentTime = 0;
+      playNarration();
+    });
+  }
 </script>
 </body>
 </html>
