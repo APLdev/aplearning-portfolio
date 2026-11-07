@@ -8,6 +8,7 @@ export const es = {
     brand: "APLearning",
     home: "Inicio",
     projects: "Proyectos",
+    demos: "Demos",
     contact: "Contacto",
     cta: "Conversemos",
   },
@@ -15,9 +16,9 @@ export const es = {
     eyebrow: "Desarrollo de cursos e-learning para empresas",
     title: "Tus documentos, convertidos en un curso e-learning listo para tu LMS.",
     subtitle:
-      "Transformo manuales, PDFs, presentaciones y documentación técnica en experiencias de aprendizaje interactivas. Tú aportas el conocimiento; yo diseño, desarrollo y entrego un curso terminado, en formato SCORM o xAPI.",
+      "Transformo videos, documentos y presentaciones en cursos interactivos. Si falta contenido, lo completamos; si partes de cero, lo desarrollamos juntos. Recibes un curso SCORM con locuciones de voz con IA, listo para tu LMS.",
     ctaPrimary: "Conversemos",
-    ctaSecondary: "Ver proyectos",
+    ctaSecondary: "Probar demos",
     mockup: {
       inputLabel: "Lo que tú entregas",
       inputDoc1: "Manual.docx",
@@ -36,19 +37,25 @@ export const es = {
     title: "Un servicio, un responsable, un curso terminado.",
     items: [
       {
-        title: "Desarrollo completo",
+        title: "Si ya tienes material",
         description:
-          "Convierto documentos, presentaciones y contenido existente en cursos interactivos, de principio a fin.",
+          "Para equipos que necesitan convertir su documentación en capacitación, aunque esté incompleta o dispersa.",
+        material: "Videos, PDF, PPT o Word, completos o parciales.",
+        delivery: "Contenido organizado y un curso interactivo adaptado a tu marca.",
       },
       {
-        title: "Diseño de experiencias",
+        title: "Si necesitas partir de cero",
         description:
-          "Organizo el contenido y propongo interacciones que hacen que la información se entienda y se recuerde.",
+          "Para temas generales que todavía no tienen un contenido base. Desarrollo el contenido a partir de los objetivos que acordamos.",
+        material: "El tema, el público y lo que necesitas que aprendan.",
+        delivery: "Contenido desarrollado desde cero y convertido en un curso funcional.",
       },
       {
-        title: "Desarrollo SCORM",
+        title: "Si el tema es técnico",
         description:
-          "Entrego paquetes SCORM o xAPI probados y listos para cargar en tu LMS.",
+          "Para procedimientos y conocimientos propios de tu operación. Trabajo en conjunto con los especialistas internos de tu empresa.",
+        material: "Documentación disponible y participación de los expertos del tema.",
+        delivery: "Un curso que recoge el conocimiento técnico validado por tu equipo.",
       },
     ],
   },
@@ -196,7 +203,7 @@ export const es = {
       {
         title: "Cursos listos para LMS",
         description:
-          "Entrego paquetes SCORM o xAPI probados y listos para publicar, sin ajustes adicionales de tu parte.",
+          "Entrego el curso en un ZIP SCORM y te apoyo con la carga y la compatibilidad en tu LMS.",
       },
       {
         title: "Comunicación directa",
@@ -251,6 +258,7 @@ export const en: Dictionary = {
     brand: "APLearning",
     home: "Home",
     projects: "Projects",
+    demos: "Demos",
     contact: "Contact",
     cta: "Let's talk",
   },
@@ -258,9 +266,9 @@ export const en: Dictionary = {
     eyebrow: "E-learning course development for companies",
     title: "Your documents, turned into an e-learning course ready for your LMS.",
     subtitle:
-      "I transform manuals, PDFs, slide decks and technical documentation into interactive learning experiences. You provide the knowledge; I design, build and deliver a finished course as a SCORM or xAPI package.",
+      "I turn videos, documents and slide decks into interactive courses. We can complete partial content or develop it together from scratch. You receive a SCORM course with AI voiceovers, ready for your LMS.",
     ctaPrimary: "Let's talk",
-    ctaSecondary: "View projects",
+    ctaSecondary: "Try demos",
     mockup: {
       inputLabel: "What you provide",
       inputDoc1: "Manual.docx",
@@ -279,19 +287,25 @@ export const en: Dictionary = {
     title: "One service, one point of contact, one finished course.",
     items: [
       {
-        title: "Full course development",
+        title: "If you already have materials",
         description:
-          "I turn documents, decks and existing content into interactive courses, start to finish.",
+          "For teams turning existing documentation into training, even when the content is incomplete or scattered.",
+        material: "Videos, PDFs, slide decks or Word files, complete or partial.",
+        delivery: "Organised content and an interactive course adapted to your brand.",
       },
       {
-        title: "Learning experience design",
+        title: "If you are starting from scratch",
         description:
-          "I organize the content and propose interactions that make information easier to understand and remember.",
+          "For general topics without existing source material. I develop the content based on the objectives we agree on.",
+        material: "The topic, audience and what you need them to learn.",
+        delivery: "Content developed from scratch and turned into a functional course.",
       },
       {
-        title: "SCORM development",
+        title: "If the subject is technical",
         description:
-          "I deliver tested SCORM or xAPI packages, ready to upload to your LMS.",
+          "For procedures and knowledge specific to your operation. I work with your company's internal subject-matter experts.",
+        material: "Available documentation and access to subject-matter experts.",
+        delivery: "A course based on technical knowledge validated by your team.",
       },
     ],
   },
@@ -439,7 +453,7 @@ export const en: Dictionary = {
       {
         title: "LMS-ready courses",
         description:
-          "I deliver tested SCORM or xAPI packages, ready to publish with no extra work on your end.",
+          "I deliver the course as a SCORM ZIP and help with uploading and compatibility on your LMS.",
       },
       {
         title: "Direct communication",

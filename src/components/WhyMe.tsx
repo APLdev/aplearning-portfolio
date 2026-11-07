@@ -19,20 +19,23 @@ const ICONS = [
 ];
 
 export function WhyMe() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const selected = [1, 2, 0];
 
   return (
-    <section className="border-b border-border py-20 sm:py-24">
+    <section className="border-b border-border py-14 sm:py-16">
       <div className="container-page">
         <div className="max-w-2xl">
           <p className="text-sm font-medium text-accent">{t.why.eyebrow}</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {t.why.title}
+            {lang === "es" ? "Trato directo, de principio a fin." : "Direct collaboration, from start to finish."}
           </h2>
         </div>
 
         <div className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {t.why.items.map((item, i) => (
+          {selected.map((i) => {
+            const item = t.why.items[i];
+            return (
             <motion.div
               key={item.title}
               initial={{ opacity: 0, y: 14 }}
@@ -55,7 +58,8 @@ export function WhyMe() {
                 </p>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

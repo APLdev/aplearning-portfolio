@@ -23,6 +23,9 @@ export function Footer() {
           <Link href="/proyectos" className="hover:text-foreground">
             {t.nav.projects}
           </Link>
+          <Link href="/demos" className="hover:text-foreground">
+            {t.nav.demos}
+          </Link>
           <Link href="/#contacto" className="hover:text-foreground">
             {t.nav.contact}
           </Link>

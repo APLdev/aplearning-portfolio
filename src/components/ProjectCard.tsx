@@ -16,7 +16,7 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-background transition-shadow hover:shadow-lg hover:shadow-black/5"
+      className="surface-card group flex flex-col overflow-hidden rounded-2xl border border-border transition-shadow hover:shadow-lg hover:shadow-accent/10"
     >
       {project.images?.length ? (
         <div className="relative aspect-video w-full overflow-hidden border-b border-border bg-surface">

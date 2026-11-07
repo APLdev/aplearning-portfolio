@@ -3,20 +3,22 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { CoursePreview } from "@/components/CoursePreview";
+import { ContactForm } from "@/components/ContactForm";
 
 export function Hero() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const emphasis = lang === "es" ? "curso e-learning" : "e-learning course";
+  const [before, after] = t.hero.title.split(emphasis);
 
   return (
-    <section className="border-b border-border">
-      <div className="container-page grid gap-10 py-12 sm:py-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-12 lg:py-20">
+    <section className="hero-violet border-b border-border">
+      <div className="container-page grid gap-10 py-12 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14 lg:py-20">
         <div>
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-sm font-medium text-accent"
+            className="inline-flex rounded-full border border-accent/15 bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent"
           >
             {t.hero.eyebrow}
           </motion.p>
@@ -25,9 +27,9 @@ export function Hero() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="mt-4 text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-[2.75rem] lg:leading-[1.08]"
+            className="mt-5 text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-[3.25rem] lg:leading-[1.08]"
           >
-            {t.hero.title}
+            {before}<span className="text-accent">{emphasis}</span>{after}
           </motion.h1>
 
           <motion.p
@@ -52,7 +54,7 @@ export function Hero() {
               {t.hero.ctaPrimary}
             </Link>
             <Link
-              href="/proyectos"
+              href="/demos"
               className="rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:bg-surface"
             >
               {t.hero.ctaSecondary}
@@ -60,8 +62,8 @@ export function Hero() {
           </motion.div>
         </div>
 
-        <div className="flex justify-center lg:justify-end">
-          <CoursePreview />
+        <div className="hero-contact-wrap flex justify-center lg:justify-end">
+          <ContactForm />
         </div>
       </div>
     </section>

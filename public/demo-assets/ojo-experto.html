@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ojo Experto · Demo de Oficina segura | APLearning</title>
+<style>
+/* Ojo Experto: escenario a la izquierda (pozo de inspección que se recorre hacia abajo) y panel de juego a la derecha.
+   Mundo visual: obra / planta industrial, cinta de seguridad amarilla y negra, casco y linterna. Sin recursos externos. */
+:root{
+  --bg:#0a0e15; --panel:#101723; --panel2:#162032; --line:#26334b; --ink:#e9eef7; --muted:#97a3b8;
+  --safety:#ffc72c; --safety-d:#c99700; --orange:#ff7a1a; --danger:#ff5a5f; --ok:#43d39e;
+  --t-obvio:#9aa6b8; --t-trampa:#ff9f43; --t-comun:#4fc3f7; --t-agudo:#6ee59a; --t-experto:#c9a0ff; --t-inspector:#ffd54f; --t-miss:#5b6678;
+  --mono:"Cascadia Mono","Consolas","SFMono-Regular","Menlo","Courier New",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,460px);height:100vh;height:100dvh}
+
+/* ---------- Escenario ---------- */
+.stage{position:relative;overflow:hidden;background:#06080c;user-select:none;-webkit-user-select:none}
+.world{position:absolute;left:0;right:0;top:0;will-change:transform}
+.sky{position:absolute;left:0;right:0;top:0;height:var(--surf);background:linear-gradient(180deg,#111b30 0%,#26324f 45%,#6a4a4f 78%,#d98b4e 100%)}
+.sun{position:absolute;left:18%;bottom:18px;width:46px;height:46px;border-radius:50%;background:#ffcf7a;box-shadow:0 0 40px 12px rgba(255,180,90,.35);opacity:.9}
+.skyline{position:absolute;left:0;right:0;bottom:0;width:100%;height:96px}
+.ground{position:absolute;left:0;right:0;top:calc(var(--surf) - 8px);height:16px;background:#4a4e57;border-top:3px solid #6c717c}
+.earth{position:absolute;left:0;right:0;top:calc(var(--surf) + 8px);bottom:0;
+  background:
+   repeating-linear-gradient(180deg,rgba(0,0,0,0) 0 38px,rgba(0,0,0,.16) 38px 41px),
+   radial-gradient(circle at 20% 30%,rgba(255,255,255,.035) 0 2px,transparent 3px) 0 0/34px 41px,
+   linear-gradient(180deg,#5c4330 0px,#3d2d22 140px,#2a2330 380px,#171b28 640px,#0a0c12 100%)}
+.shaft{position:absolute;left:50%;transform:translateX(-50%);width:132px;top:calc(var(--surf) + 8px);bottom:0;
+  background:repeating-linear-gradient(180deg,transparent 0 84px,#5b4127 84px 92px,transparent 92px),#07090e;
+  border-left:7px solid #4b3522;border-right:7px solid #4b3522;box-shadow:inset 0 0 40px rgba(0,0,0,.9)}
+.tape{position:absolute;top:calc(var(--surf) - 12px);height:9px;width:54px;background:repeating-linear-gradient(-45deg,var(--safety) 0 7px,#14161b 7px 14px)}
+.tape.l{left:calc(50% - 66px - 54px)} .tape.r{left:calc(50% + 66px)}
+.headframe{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--surf) - 150px);width:170px;height:150px;pointer-events:none}
+.cable{position:absolute;left:50%;width:2px;margin-left:-1px;top:calc(var(--surf) - 128px);background:#c9d1dc;opacity:.75;transform-origin:top}
+.rig{position:absolute;left:50%;top:0;width:72px;height:90px;margin-left:-36px}
+.rig svg{width:72px;height:90px;display:block;position:relative;z-index:2;animation:bob 2.6s ease-in-out infinite}
+.beam{position:absolute;left:50%;top:70px;width:210px;height:260px;transform:translateX(-50%);background:radial-gradient(ellipse 50% 60% at 50% 0%,rgba(255,236,170,.30),rgba(255,236,170,.08) 55%,transparent 72%);pointer-events:none;z-index:1}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.hz{position:absolute;width:22px;height:20px;margin-left:-11px;opacity:.10;transition:opacity .6s ease, filter .6s ease;z-index:1}
+.hz.seen{opacity:1;filter:drop-shadow(0 0 6px rgba(255,199,44,.8))}
+.chip{position:absolute;z-index:3;max-width:min(170px,calc(50% - 84px));padding:5px 8px;border-radius:6px;background:rgba(10,14,21,.92);border:1.5px solid var(--tc);color:var(--ink);font:600 11px/1.25 var(--mono);letter-spacing:.04em;text-transform:uppercase;box-shadow:0 0 14px color-mix(in srgb,var(--tc) 35%,transparent);animation:chipIn .45s ease-out both}
+.chip small{display:block;color:var(--tc);font-size:10px;letter-spacing:.08em;margin-top:2px}
+.chip.l{right:calc(50% + 76px)} .chip.r{left:calc(50% + 76px)}
+.chip.l::after,.chip.r::after{content:"";position:absolute;top:12px;width:10px;height:2px;background:var(--tc)}
+.chip.l::after{right:-12px} .chip.r::after{left:-12px}
+@keyframes chipIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+.p{position:absolute;width:4px;height:4px;border-radius:1px;background:var(--pc);z-index:4;pointer-events:none;animation:fly var(--pd,900ms) ease-out forwards}
+@keyframes fly{from{opacity:1;transform:translate(0,0)}to{opacity:0;transform:translate(var(--dx),var(--dy))}}
+.hud{position:absolute;top:14px;right:14px;z-index:5;display:flex;align-items:baseline;gap:6px;padding:6px 12px;border-radius:8px;background:rgba(6,9,14,.78);border:1px solid rgba(255,255,255,.08);font-family:var(--mono)}
+.hud span{font-size:11px;letter-spacing:.14em;color:var(--muted)}
+.hud b{font-size:22px;color:var(--safety);min-width:3ch;text-align:right;font-variant-numeric:tabular-nums}
+.hud b.slam{animation:slam .5s ease-out}
+@keyframes slam{0%{transform:scale(1.5)}100%{transform:scale(1)}}
+.flash{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;background:#fff}
+.vignette{position:absolute;inset:0;z-index:5;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 45%,rgba(0,0,0,.6) 100%)}
+.stage.shake{animation:shake .45s linear}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+
+/* ---------- Panel ---------- */
+.panel{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.view{flex:1;overflow-y:auto;padding:26px 26px 18px;display:flex;flex-direction:column;gap:18px}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 26px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+.foot .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--muted);vertical-align:1px}
+.foot .dot.on{background:var(--ok);box-shadow:0 0 6px var(--ok)}
+.eyebrow{margin:0;font:600 11px/1.3 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.title{margin:6px 0 0;font:800 40px/1 var(--mono);letter-spacing:.12em;color:var(--safety);text-shadow:0 3px 0 var(--safety-d),0 0 22px rgba(255,199,44,.25)}
+.tapebar{height:10px;margin-top:12px;border-radius:2px;background:repeating-linear-gradient(-45deg,var(--safety) 0 10px,#14161b 10px 20px)}
+.lead{margin:12px 0 0;color:var(--ink);font-size:15.5px;text-wrap:pretty}
+.how{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.how li{display:flex;gap:10px;align-items:flex-start;color:var(--muted);font-size:14px}
+.how li b{color:var(--ink);font-weight:600}
+.how .n{flex:none;width:22px;height:22px;border-radius:5px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);font:700 12px var(--mono);color:var(--safety)}
+.dives{display:grid;gap:10px}
+.dive{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--panel2);border:1px solid var(--line)}
+.dive .num{flex:none;width:38px;height:38px;border-radius:8px;display:grid;place-items:center;font:800 16px var(--mono);background:#0c121c;border:1px solid var(--line);color:var(--muted)}
+.dive.open .num{color:var(--bg);background:var(--safety);border-color:var(--safety)}
+.dive.done .num{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 50%,transparent)}
+.dive .txt{flex:1;min-width:0}
+.dive h3{margin:0;font-size:15px;font-weight:650}
+.dive p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.dive .st{font:600 11px var(--mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:10px 14px;border-radius:8px;font:700 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#3a4a68}
+.btn:focus-visible,.toggle:focus-visible,input:focus-visible,summary:focus-visible,.linkbtn:focus-visible{outline:2px solid var(--safety);outline-offset:2px}
+.btn.primary{background:var(--safety);border-color:var(--safety);color:#14110a}
+.btn.primary:hover{background:#ffd451}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:7px 10px;font-size:11px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.toggle{appearance:none;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:6px 12px;font:600 11.5px var(--mono);letter-spacing:.06em}
+.toggle[aria-pressed="true"]{color:var(--ink);border-color:#3a4a68;background:var(--panel2)}
+details.legend{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:rgba(255,255,255,.015)}
+details.legend summary{cursor:pointer;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tiers{list-style:none;margin:10px 0 2px;padding:0;display:grid;gap:6px}
+.tiers li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:baseline;font-size:13.5px}
+.tiers i{width:10px;height:10px;border-radius:3px;background:var(--tc);display:block;transform:translateY(1px)}
+.tiers span{color:var(--muted)}
+.tiers b{font-family:var(--mono);color:var(--tc);font-size:12.5px}
+.linkbtn{appearance:none;background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:12.5px;align-self:flex-start}
+
+/* Juego */
+.playhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dots{display:flex;gap:6px}
+.dots i{width:22px;height:6px;border-radius:3px;background:var(--line)}
+.dots i.cur{background:var(--safety)}
+.dots i.done{background:var(--tc,var(--muted))}
+.qcard{padding:18px 18px 16px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);border-top:4px solid var(--safety)}
+.qnum{margin:0 0 6px;font:700 11px var(--mono);letter-spacing:.16em;color:var(--safety)}
+.q{margin:0;font-size:21px;line-height:1.3;font-weight:700;text-wrap:balance}
+.timer{display:flex;align-items:center;gap:10px}
+.tbar{flex:1;height:8px;border-radius:4px;background:#0c121c;overflow:hidden;border:1px solid var(--line)}
+.tbar i{display:block;height:100%;width:100%;background:var(--safety);transform-origin:left}
+.timer.low .tbar i{background:var(--danger)}
+.tnum{font:700 14px var(--mono);min-width:3ch;text-align:right;font-variant-numeric:tabular-nums}
+.timer.low .tnum{color:var(--danger)}
+.timer.off .tbar{opacity:.35}
+.ansform{display:flex;gap:8px}
+.ansform input{flex:1;min-width:0;padding:12px 14px;border-radius:8px;border:1.5px solid var(--line);background:#0b111b;color:var(--ink);font:500 16px var(--sans)}
+.ansform input::placeholder{color:#5f6b80}
+.ansform input:disabled{opacity:.6}
+.ansform.shake{animation:shake .4s linear}
+.msg{min-height:22px;font-size:14px;color:var(--muted)}
+.msg.warn{color:var(--ink);padding:10px 12px;border-radius:8px;background:color-mix(in srgb,var(--orange) 14%,transparent);border:1px solid color-mix(in srgb,var(--orange) 45%,transparent)}
+.msg.warn b{color:var(--t-trampa)}
+.msg .row{margin-top:8px}
+.reveal{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:12px;background:#0c121c;border:1.5px solid var(--tc);box-shadow:0 0 24px color-mix(in srgb,var(--tc) 18%,transparent);animation:chipIn .4s ease-out both}
+.rv-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:color-mix(in srgb,var(--tc) 18%,transparent);color:var(--tc);font:700 12px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.rv-pts{font:800 22px var(--mono);color:var(--tc)}
+.rv-ans{margin:0;font-size:15px}
+.rv-blurb{margin:-4px 0 0;color:var(--muted);font-size:13.5px}
+.rv-box{padding:10px 12px;border-radius:8px;background:var(--panel2);border:1px solid var(--line)}
+.rv-box h4{margin:0 0 4px;font:700 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.rv-box p{margin:0;font-size:14px}
+.rv-box.ins{border-color:color-mix(in srgb,var(--t-inspector) 45%,transparent);background:color-mix(in srgb,var(--t-inspector) 7%,var(--panel2))}
+.rv-box.ins h4{color:var(--t-inspector)}
+
+/* Resumen */
+.big{margin:4px 0 0;font:800 46px/1 var(--mono);color:var(--safety)}
+.big small{font-size:18px;color:var(--muted);margin-left:6px}
+.verdict{margin:8px 0 0;font-size:16px;text-wrap:pretty}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.log li{display:grid;gap:4px;padding:10px 12px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--tc)}
+.log .lq{font-size:12.5px;color:var(--muted)}
+.log .la{display:flex;justify-content:space-between;gap:10px;font-weight:600}
+.log .la em{font:700 12px var(--mono);font-style:normal;color:var(--tc);white-space:nowrap}
+.blind{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.blind li{padding:10px 12px;border-radius:8px;background:color-mix(in srgb,var(--t-inspector) 6%,var(--panel2));border:1px solid color-mix(in srgb,var(--t-inspector) 30%,transparent);font-size:14px}
+.blind b{color:var(--t-inspector)}
+h2.sec{margin:0;font:700 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;grid-template-rows:38vh minmax(0,1fr);height:100dvh}
+  .panel{border-left:0;border-top:1px solid var(--line)}
+  .view{padding:18px 16px 14px}
+  .foot{padding:8px 16px}
+  .title{font-size:32px}
+  .q{font-size:19px}
+  .hud{top:10px;right:10px}
+}
+@media (prefers-reduced-motion:reduce){
+  .rig svg{animation:none}
+  .chip,.reveal{animation:none}
+}
+.demo-actions{flex-wrap:wrap;margin-top:20px}.demo-actions a{display:inline-block;text-decoration:none;white-space:normal}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="stage" id="stage" aria-hidden="true">
+    <div class="world" id="world">
+      <div class="sky">
+        <div class="sun"></div>
+        <svg class="skyline" viewBox="0 0 800 96" preserveAspectRatio="none" fill="#121a29">
+          <path d="M0 96V60h40V40h30v20h26V28h44v32h20V50h36v46zM180 96V36h18V16h10v20h40v60zM470 96V44h60V30h16v14h40v52zM600 96V58h30V20h12v38h50V48h40v48zM740 96V30h24v66zM764 96V56h36v40z"/>
+          <path d="M248 96V64h50v32zM520 96V70h40v26z" fill="#18233a"/>
+        </svg>
+      </div>
+      <svg class="headframe" viewBox="0 0 170 150" fill="none" stroke="#2b3446" stroke-width="6" stroke-linecap="square">
+        <path d="M22 150 L72 30 M148 150 L98 30 M40 108h90 M56 70h58"/>
+        <path d="M60 30h50" stroke-width="8"/>
+        <circle cx="85" cy="22" r="16" stroke="#3a465c" stroke-width="5"/>
+        <circle cx="85" cy="22" r="3" fill="#3a465c" stroke="none"/>
+      </svg>
+      <div class="ground"></div>
+      <div class="tape l"></div><div class="tape r"></div>
+      <div class="earth"></div>
+      <div class="shaft"></div>
+      <div id="hazards"></div>
+      <div class="cable" id="cable"></div>
+      <div class="rig" id="rig">
+        <div class="beam"></div>
+        <svg viewBox="0 0 24 30" shape-rendering="crispEdges">
+          <rect x="11" y="0" width="2" height="4" fill="#9aa5b4"/>
+          <rect x="0" y="4" width="24" height="2" fill="#6b7685"/>
+          <rect x="8" y="8" width="8" height="3" fill="#ffc72c"/>
+          <rect x="9" y="7" width="6" height="1" fill="#ffd96b"/>
+          <rect x="7" y="11" width="10" height="1" fill="#c99700"/>
+          <rect x="14" y="8" width="2" height="2" fill="#fff6c2"/>
+          <rect x="9" y="12" width="6" height="4" fill="#e3ad84"/>
+          <rect x="10" y="13" width="1" height="1" fill="#1b1b1b"/>
+          <rect x="13" y="13" width="1" height="1" fill="#1b1b1b"/>
+          <rect x="8" y="16" width="8" height="7" fill="#ff7a1a"/>
+          <rect x="8" y="18" width="8" height="1" fill="#e6f0ff"/>
+          <rect x="8" y="21" width="8" height="1" fill="#e6f0ff"/>
+          <rect x="6" y="16" width="2" height="5" fill="#ff7a1a"/>
+          <rect x="16" y="16" width="2" height="5" fill="#ff7a1a"/>
+          <rect x="6" y="21" width="2" height="1" fill="#e3ad84"/>
+          <rect x="16" y="21" width="2" height="1" fill="#e3ad84"/>
+          <rect x="17" y="17" width="3" height="4" fill="#d8dee8"/>
+          <rect x="9" y="23" width="6" height="3" fill="#2f4a6d"/>
+          <rect x="8" y="26" width="3" height="2" fill="#20242c"/>
+          <rect x="13" y="26" width="3" height="2" fill="#20242c"/>
+          <rect x="0" y="4" width="2" height="26" fill="#6b7685"/>
+          <rect x="22" y="4" width="2" height="26" fill="#6b7685"/>
+          <rect x="0" y="28" width="24" height="2" fill="#6b7685"/>
+          <rect x="4" y="6" width="1" height="22" fill="#6b7685" opacity=".55"/>
+          <rect x="19" y="6" width="1" height="22" fill="#6b7685" opacity=".55"/>
+        </svg>
+      </div>
+      <div id="marks"></div>
+    </div>
+    <div class="hud"><span>PROF.</span><b id="depth">0</b><span>m</span></div>
+    <div class="flash" id="flash"></div>
+    <div class="vignette"></div>
+  </section>
+
+  <main class="panel">
+    <div class="view" id="view"></div>
+    <footer class="foot">
+      <span id="lmsBadge"></span>
+      <button class="linkbtn" id="resetBtn" hidden>Reiniciar progreso</button>
+    </footer>
+  </main>
+  <div class="sr" aria-live="polite" id="live"></div>
+</div>
+
+<script>window.CURSO = {"id":"ojo-experto-sst-demo-oficina-v1","antetitulo":"APLearning · Demo interactiva de SST","titulo":"OJO EXPERTO","lema":"Más allá de lo evidente. Amplía tu mirada sobre la seguridad.","segundos":30,"desbloqueo":"secuencial","estadoAlCompletar":"completed","niveles":{"obvio":{"nombre":"A simple vista","puntos":10,"desc":"Un punto de partida para observar."},"trampa":{"nombre":"Para profundizar","puntos":15,"desc":"Una respuesta que conviene examinar con más detalle."},"comun":{"nombre":"Buen ojo","puntos":30,"desc":"Otro aspecto del escenario para reconocer."},"agudo":{"nombre":"Ojo agudo","puntos":60,"desc":"Una mirada a las condiciones del entorno."},"experto":{"nombre":"Ojo experto","puntos":85,"desc":"Un detalle para ampliar tu análisis."},"inspector":{"nombre":"Ojo de inspector","puntos":100,"desc":"Una perspectiva adicional para explorar."},"miss":{"nombre":"Sin hallazgo","puntos":0,"desc":"Se acabó el tiempo."}},"bandas":[{"min":0,"txt":"En la superficie. Hay mucho más por ver ahí abajo."},{"min":101,"txt":"Buen ojo. Sigue explorando otros aspectos del escenario."},{"min":181,"txt":"Ojo agudo. Sumaste perspectivas a tu recorrido."},{"min":261,"txt":"Ojo experto. Ampliaste tu mirada en esta inmersión."},{"min":341,"txt":"Ojo de inspector. Alcanzaste la mayor profundidad del juego."}],"inmersiones":[{"id":"inm1","titulo":"Oficina segura","sub":"Los riesgos del día a día frente al escritorio","consignas":[{"q":"Nombra un peligro que puede haber en una oficina.","r":[{"n":"obvio","t":"Cables sueltos","a":["cables","cable","cables sueltos","cable suelto","cables en el piso","cables tirados"]},{"n":"obvio","t":"Piso mojado o resbaloso","a":["piso mojado","piso resbaloso","suelo mojado","resbalon","resbalar","derrame","derrames","piso encerado"]},{"n":"obvio","t":"Objetos que provocan tropiezos","a":["tropiezo","tropezar","tropiezos","obstaculos","objetos en el piso","cajas en el pasillo"]},{"n":"obvio","t":"Cajones abiertos","a":["cajones abiertos","cajon abierto","gavetas abiertas","cajones"]},{"n":"trampa","t":"Enchufes sobrecargados","a":["enchufes sobrecargados","enchufe sobrecargado","tomacorriente sobrecargado","regleta sobrecargada","zapatilla sobrecargada","sobrecarga electrica","muchos enchufes","sobrecarga"]},{"n":"comun","t":"Mala postura","a":["mala postura","postura","posturas inadecuadas","postura incorrecta","malas posturas"]},{"n":"comun","t":"Silla en mal estado","a":["silla rota","silla en mal estado","silla danada","silla inestable","silla malograda"]},{"n":"comun","t":"Escaleras","a":["escaleras","escalera","gradas","caida en escaleras"]},{"n":"comun","t":"Sedentarismo","a":["sedentarismo","sedentario","estar sentado mucho tiempo","mucho tiempo sentado"]},{"n":"agudo","t":"Iluminación deficiente","a":["iluminacion","mala iluminacion","poca luz","iluminacion deficiente","luz insuficiente","falta de luz"]},{"n":"agudo","t":"Reflejos en la pantalla","a":["reflejos","reflejo","reflejo en la pantalla","reflejos en la pantalla","brillo de la ventana"]},{"n":"agudo","t":"Estrés laboral","a":["estres","estres laboral","carga laboral","presion laboral","burnout","sobrecarga de trabajo","riesgo psicosocial"]},{"n":"agudo","t":"Ruido","a":["ruido","ruido ambiental","bulla"]},{"n":"agudo","t":"Temperatura inadecuada","a":["temperatura","aire acondicionado","calor","frio","temperatura inadecuada"]},{"n":"agudo","t":"Objetos pesados en estantes altos","a":["objetos en altura","cajas en estantes altos","objetos pesados en altura","cosas pesadas arriba","objetos en estantes altos"]},{"n":"experto","t":"Fatiga visual","a":["fatiga visual","cansancio visual","vista cansada","ojos cansados","sobreesfuerzo visual"]},{"n":"experto","t":"Mala ventilación","a":["ventilacion","mala ventilacion","calidad del aire","aire viciado","co2","dioxido de carbono","falta de ventilacion"]},{"n":"experto","t":"Rutas de evacuación obstruidas","a":["rutas de evacuacion bloqueadas","ruta de evacuacion obstruida","salida obstruida","salidas de emergencia bloqueadas","pasillos obstruidos","salida de emergencia bloqueada"]},{"n":"experto","t":"Movimientos repetitivos","a":["movimientos repetitivos","movimiento repetitivo","tendinitis","tunel carpiano","sindrome del tunel carpiano","esfuerzo repetitivo"]},{"n":"experto","t":"Sismos","a":["sismo","sismos","terremoto","temblor"]},{"n":"inspector","t":"Muebles altos sin anclar","a":["muebles sin anclar","estantes sin anclar","archiveros sin anclar","muebles sin fijar","estantes sin fijar","armarios sin anclaje","muebles sueltos","estantes sin fijar a la pared","caida de muebles"]}],"malas":[{"a":["computadora","computador","pc","laptop","impresora","silla","escritorio","monitor"],"msg":"Un objeto por sí solo no es un peligro. Piensa en la condición que genera el riesgo: ¿cómo están sus cables? ¿está bien ubicado? ¿está en buen estado?"}],"hallazgo":{"t":"Muebles altos sin anclar","txt":"En un sismo, los estantes y archivadores sin fijar a la pared pueden volcarse sobre las personas o bloquear la salida. Incluye su anclaje en la revisión del espacio."}},{"q":"Nombra algo que debes ajustar en tu puesto con computadora para cuidar tu cuerpo.","r":[{"n":"obvio","t":"Altura de la silla","a":["silla","la silla","altura de la silla","ajustar la silla","asiento","altura del asiento"]},{"n":"trampa","t":"Silla ergonómica","a":["silla ergonomica","comprar una silla ergonomica"],"nota":"Una silla ergonómica también necesita estar ajustada a tu cuerpo."},{"n":"comun","t":"Altura del monitor","a":["monitor","pantalla","altura del monitor","altura de la pantalla","monitor a la altura de los ojos","subir el monitor"]},{"n":"comun","t":"Respaldo / soporte lumbar","a":["respaldo","espaldar","soporte lumbar","apoyo lumbar","lumbar"]},{"n":"comun","t":"Posición del teclado","a":["teclado","posicion del teclado","altura del teclado"]},{"n":"agudo","t":"Distancia a la pantalla","a":["distancia","distancia a la pantalla","distancia del monitor","distancia de la pantalla"]},{"n":"agudo","t":"Posición del mouse","a":["mouse","raton","posicion del mouse"]},{"n":"agudo","t":"Apoyabrazos","a":["apoyabrazos","posabrazos","reposabrazos","brazos de la silla"]},{"n":"experto","t":"Reposapiés","a":["reposapies","apoyapies","apoyo para los pies","pies apoyados","pies en el piso"]},{"n":"experto","t":"Altura del escritorio","a":["escritorio","altura del escritorio","altura de la mesa","mesa"]},{"n":"experto","t":"Brillo y contraste","a":["brillo","contraste","brillo de la pantalla","brillo del monitor"]},{"n":"experto","t":"Ubicación frente a la ventana","a":["ventana","reflejos","iluminacion","luz","ubicacion frente a la ventana","posicion respecto a la ventana"]},{"n":"experto","t":"Elevar la laptop","a":["laptop","soporte para laptop","elevador de laptop","base para laptop","teclado externo","elevar la laptop"]},{"n":"inspector","t":"Tamaño de letra / zoom","a":["tamano de letra","letra","zoom","tamano de fuente","fuente","escala de pantalla","agrandar la letra"]}],"malas":[{"a":["computadora","celular","wifi","internet","contrasena"],"msg":"Piensa en algo ajustable que cambie tu postura: alturas, distancias, ángulos o la configuración de la pantalla."}],"hallazgo":{"t":"Tamaño de letra / zoom","txt":"Si la letra es pequeña, sin darte cuenta adelantas la cabeza hacia la pantalla. Ajustar el zoom ayuda a leer sin acercar la cabeza a la pantalla."}},{"q":"Nombra una señal de que tu cuerpo necesita una pausa activa.","r":[{"n":"obvio","t":"Dolor de espalda","a":["dolor de espalda","espalda","dolor lumbar","me duele la espalda"]},{"n":"obvio","t":"Dolor de cuello","a":["dolor de cuello","cuello","cervical","torticolis"]},{"n":"comun","t":"Cansancio","a":["cansancio","fatiga","agotamiento","sueno","somnolencia","cansado"]},{"n":"comun","t":"Dolor de cabeza","a":["dolor de cabeza","cabeza","cefalea","jaqueca"]},{"n":"comun","t":"Ojos cansados o secos","a":["ojos cansados","ardor de ojos","ojos rojos","ojos secos","resequedad ocular","ojos","vista cansada","ardor en los ojos"]},{"n":"agudo","t":"Tensión en los hombros","a":["hombros","tension en hombros","tension en los hombros","dolor de hombros","hombros tensos","contractura"]},{"n":"agudo","t":"Rigidez o entumecimiento","a":["rigidez","entumecimiento","cuerpo rigido","piernas entumecidas","entumecido"]},{"n":"agudo","t":"Dolor en muñecas o manos","a":["munecas","muneca","dolor de munecas","dolor de muneca","manos","dolor de manos"]},{"n":"experto","t":"Hormigueo en manos o dedos","a":["hormigueo","adormecimiento","manos dormidas","dedos dormidos","cosquilleo"]},{"n":"experto","t":"Visión borrosa","a":["vision borrosa","ver borroso","borroso"]},{"n":"experto","t":"Piernas o pies hinchados","a":["piernas hinchadas","pies hinchados","hinchazon","mala circulacion","circulacion","retencion de liquidos"]},{"n":"inspector","t":"Pérdida de concentración","a":["concentracion","falta de concentracion","perdida de concentracion","distraccion","errores","cometer errores","leer lo mismo varias veces","irritabilidad","no me concentro"]}],"malas":[{"a":["hambre","sed","aburrimiento","aburrido"],"msg":"Eso no es una señal de sobrecarga física o mental. Piensa en lo que siente tu cuerpo después de horas en la misma postura."}],"hallazgo":{"t":"Pérdida de concentración","txt":"El cansancio mental aparece antes que el dolor: releer la misma línea o cometer errores simples ya es señal de pausa. Esperar a que duela es llegar tarde."}},{"q":"Nombra una mala práctica con equipos eléctricos en la oficina.","r":[{"n":"obvio","t":"Sobrecargar enchufes","a":["sobrecargar enchufes","enchufes sobrecargados","muchos enchufes","sobrecarga","regleta sobrecargada","zapatilla sobrecargada","tomacorriente sobrecargado","sobrecargar"]},{"n":"obvio","t":"Usar cables pelados o dañados","a":["cables pelados","cable pelado","cables rotos","cables danados","cables en mal estado","cable danado"]},{"n":"comun","t":"Manipular con las manos mojadas","a":["manos mojadas","con las manos mojadas","agua","mojado","mojadas"]},{"n":"comun","t":"Bebidas cerca de los equipos","a":["bebidas","cafe","liquidos cerca","bebidas cerca de la computadora","tomar cafe en el escritorio","liquidos"]},{"n":"comun","t":"Desenchufar jalando del cable","a":["jalar el cable","jalar del cable","tirar del cable","desenchufar del cable","jalando el cable"]},{"n":"agudo","t":"Conectar extensiones en cadena","a":["regletas en cadena","extensiones en cadena","zapatillas conectadas entre si","extension conectada a otra","extensiones unidas","en cadena"]},{"n":"agudo","t":"Cables bajo alfombras o muebles","a":["cables bajo la alfombra","cables debajo de la alfombra","cables pisados","cables aplastados","cables bajo muebles","alfombra"]},{"n":"agudo","t":"Empalmes o adaptadores improvisados","a":["adaptadores","adaptador","adaptador improvisado","empalmes","empalme","cinta aislante","conexiones hechizas","conexion improvisada"]},{"n":"experto","t":"Tapar la ventilación de los equipos","a":["tapar ventilacion","ventilacion del equipo","rejillas tapadas","laptop sobre la cama","cubrir el cpu","cargador tapado","tapar la ventilacion"]},{"n":"experto","t":"Reparar equipos sin autorización","a":["reparar","abrir equipos","manipular equipos","arreglar uno mismo","reparaciones caseras","reparar equipos"]},{"n":"experto","t":"Dejar cargadores conectados","a":["dejar cargadores conectados","cargadores enchufados","cargador conectado","equipos encendidos toda la noche","cargadores"]},{"n":"inspector","t":"Anular la conexión a tierra","a":["tercera pata","quitar la tierra","puesta a tierra","cortar la pata","sin tierra","pata de tierra","enchufe sin tierra","conexion a tierra","tierra"]}],"malas":[{"a":["usar la computadora","prender la computadora","usar el celular"],"msg":"Usar un equipo no es una mala práctica en sí. Piensa en cómo se conecta, dónde se ubica o en qué estado está."}],"hallazgo":{"t":"Anular la conexión a tierra","txt":"Cortar o doblar la tercera pata del enchufe elimina la protección que desvía la corriente si hay una falla. El equipo funciona igual… hasta que alguien recibe la descarga."}}]}]};</script>
+<script>
+(function(){
+"use strict";
+const C = window.CURSO;
+const $ = id => document.getElementById(id);
+const view = $("view"), stageEl = $("stage"), world = $("world"), rig = $("rig"), cable = $("cable"), marks = $("marks"), depthEl = $("depth"), flashEl = $("flash");
+const REDUCED = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ======================================================================
+   NIVELES
+   ====================================================================== */
+const TIER_KEYS = ["obvio","trampa","comun","agudo","experto","inspector","miss"];
+const TIERS = TIER_KEYS.map(k => Object.assign({ k, color: `var(--t-${k})` }, C.niveles[k]));
+const TI = Object.fromEntries(TIER_KEYS.map((k,i)=>[k,i]));
+const MISS = TI.miss;
+const MAX_PER_Q = TIERS[TI.inspector].puntos;
+
+/* ======================================================================
+   NORMALIZACIÓN Y COINCIDENCIAS
+   ====================================================================== */
+const STOP = new Set("el la los las un una unos unas de del al y e o u en con por para que se su sus mi mis tu tus lo le les es son a muy mas mucho".split(" "));
+function normT(s){
+  return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(w => w && !STOP.has(w))
+    .map(w => (w.length > 3 && w.endsWith("s")) ? w.slice(0,-1) : w).join(" ");
+}
+function lev(a,b){
+  if (a === b) return 0;
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({length:n+1},(_,j)=>j), cur = new Array(n+1);
+  for (let i=1;i<=m;i++){ cur[0]=i;
+    for (let j=1;j<=n;j++){ cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1] + (a[i-1]===b[j-1]?0:1)); }
+    [prev,cur]=[cur,prev]; }
+  return prev[n];
+}
+const fuzzyLimit = len => len <= 4 ? 0 : len <= 7 ? 1 : len <= 12 ? 2 : 3;
+
+// Pre-normalizar alias
+C.inmersiones.forEach(dv => dv.consignas.forEach(p => {
+  p.r.forEach(r => { r._n = [...new Set([r.t, ...r.a].map(normT).filter(Boolean))]; });
+  (p.malas||[]).forEach(b => { b._n = [...new Set(b.a.map(normT).filter(Boolean))]; });
+}));
+
+function matchAnswer(input, p){
+  const n = normT(input);
+  if (n.length < 2) return { type:"short" };
+  const padded = " " + n + " ", tokSet = new Set(n.split(" "));
+  let best = null;
+  const consider = (kind, idx, alias) => {
+    let score = -1;
+    if (n === alias) score = 1000 + alias.length;
+    else if (padded.includes(" " + alias + " ")) score = alias.length;
+    else if (alias.includes(" ") && alias.split(" ").every(w => tokSet.has(w))) score = alias.length - 0.5; // mismas palabras, otro orden
+    if (score < 0) return;
+    if (!best || score > best.score || (score === best.score && kind === "ans" && best.kind === "bad")) best = { kind, idx, score };
+  };
+  p.r.forEach((r,i) => r._n.forEach(a => consider("ans", i, a)));
+  (p.malas||[]).forEach((b,i) => b._n.forEach(a => consider("bad", i, a)));
+  if (best) return best.kind === "ans" ? { type:"ans", idx:best.idx } : { type:"bad", idx:best.idx };
+
+  // Coincidencia aproximada (errores de tipeo): se pide confirmación
+  const toks = n.split(" ");
+  let fz = null;
+  p.r.forEach((r,i) => r._n.forEach(a => {
+    const lim = fuzzyLimit(a.length);
+    if (!lim) return;
+    let d = lev(n, a);
+    if (!a.includes(" ")) toks.forEach(t => { if (t.length >= 4) d = Math.min(d, lev(t, a)); });
+    if (d <= lim && (!fz || d < fz.d)) fz = { d, idx:i };
+  }));
+  if (fz) return { type:"suggest", idx:fz.idx };
+  return { type:"none" };
+}
+
+/* ======================================================================
+   LMS · SCORM 1.2 y 2004
+   ====================================================================== */
+const LMS = (() => {
+  let api = null, v = 0, ok = false, finished = false;
+  const t0 = Date.now();
+  function find(w){
+    let n = 0;
+    try { while (w && n < 12){
+      if (w.API_1484_11) return { v:2004, api:w.API_1484_11 };
+      if (w.API) return { v:12, api:w.API };
+      if (w.parent === w) break; w = w.parent; n++; } } catch(e){}
+    return null;
+  }
+  const pad = x => String(x).padStart(2,"0");
+  const K = (k12, k04) => v === 2004 ? k04 : k12;
+  const L = {
+    get ok(){ return ok; }, get version(){ return v; },
+    init(){
+      let h = find(window);
+      if (!h) { try { if (window.opener) h = find(window.opener); } catch(e){} }
+      if (!h) return false;
+      api = h.api; v = h.v;
+      try { ok = String(v === 2004 ? api.Initialize("") : api.LMSInitialize("")) === "true"; } catch(e){ ok = false; }
+      if (ok){
+        const st = L.get(K("cmi.core.lesson_status","cmi.completion_status"));
+        if (!st || st === "not attempted" || st === "unknown") L.set(K("cmi.core.lesson_status","cmi.completion_status"), "incomplete");
+        L.commit();
+      }
+      return ok;
+    },
+    get(k){ if (!ok) return ""; try { return String((v === 2004 ? api.GetValue(k) : api.LMSGetValue(k)) ?? ""); } catch(e){ return ""; } },
+    set(k,val){ if (!ok) return false; try { return String(v === 2004 ? api.SetValue(k, String(val)) : api.LMSSetValue(k, String(val))) === "true"; } catch(e){ return false; } },
+    commit(){ if (!ok) return; try { v === 2004 ? api.Commit("") : api.LMSCommit(""); } catch(e){} },
+    loadSuspend(){ return L.get("cmi.suspend_data"); },
+    saveSuspend(s){ L.set("cmi.suspend_data", s); L.commit(); },
+    score(pct){
+      pct = Math.max(0, Math.min(100, Math.round(pct)));
+      if (v === 2004){ L.set("cmi.score.min","0"); L.set("cmi.score.max","100"); L.set("cmi.score.raw",pct); L.set("cmi.score.scaled",(pct/100).toFixed(2)); }
+      else { L.set("cmi.core.score.min","0"); L.set("cmi.core.score.max","100"); L.set("cmi.core.score.raw",pct); }
+    },
+    complete(){
+      const st = C.estadoAlCompletar === "passed" ? "passed" : "completed";
+      if (v === 2004){ L.set("cmi.completion_status","completed"); if (st === "passed") L.set("cmi.success_status","passed"); }
+      else L.set("cmi.core.lesson_status", st);
+      L.commit();
+    },
+    interaction(id, response, correct, weight){
+      if (!ok) return;
+      const n = parseInt(L.get("cmi.interactions._count"),10) || 0, b = `cmi.interactions.${n}.`;
+      const resp = String(response).replace(/[\r\n\t]+/g," ").slice(0,250);
+      const now = new Date();
+      L.set(b+"id", id);
+      L.set(b+"type","fill-in");
+      L.set(b+"weighting", weight);
+      if (v === 2004){
+        L.set(b+"learner_response", resp);
+        L.set(b+"result", correct ? "correct" : "incorrect");
+        L.set(b+"timestamp", now.toISOString().slice(0,19));
+      } else {
+        L.set(b+"student_response", resp);
+        L.set(b+"result", correct ? "correct" : "wrong");
+        L.set(b+"time", `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`);
+      }
+    },
+    finish(done){
+      if (!ok || finished) return; finished = true;
+      const s = Math.round((Date.now() - t0) / 1000);
+      if (v === 2004){
+        L.set("cmi.session_time", `PT${Math.floor(s/3600)}H${Math.floor(s%3600/60)}M${s%60}S`);
+        L.set("cmi.exit", done ? "normal" : "suspend");
+      } else {
+        L.set("cmi.core.session_time", `${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`);
+        L.set("cmi.core.exit", done ? "" : "suspend");
+      }
+      L.commit();
+      try { v === 2004 ? api.Terminate("") : api.LMSFinish(""); } catch(e){}
+    }
+  };
+  return L;
+})();
+
+/* ======================================================================
+   ESTADO PERSISTENTE (suspend_data o localStorage en vista previa)
+   ====================================================================== */
+const LS_KEY = "ojo-experto:" + C.id;
+let data = { v:1, d:[], snd:1, nt:1 };   // d[i] = { r:[[tierIdx, respIdx], ...], f:"YYYY-MM-DD" | 0 }
+function load(){
+  let raw = "";
+  if (LMS.ok) raw = LMS.loadSuspend();
+  else { try { raw = localStorage.getItem(LS_KEY) || ""; } catch(e){} }
+  try {
+    const o = raw ? JSON.parse(raw) : null;
+    if (o && o.v === 1 && Array.isArray(o.d)) data = Object.assign(data, o);
+  } catch(e){}
+  // Saneamiento por si el contenido cambió
+  data.d = C.inmersiones.map((dv,i) => {
+    const x = data.d[i];
+    if (!x || !Array.isArray(x.r)) return { r:[], f:0 };
+    const r = x.r.slice(0, dv.consignas.length).filter(e => Array.isArray(e) && TIERS[e[0]]);
+    return { r, f: r.length === dv.consignas.length ? (x.f || today()) : 0 };
+  });
+}
+function save(){
+  const s = JSON.stringify(data);
+  if (LMS.ok) LMS.saveSuspend(s);
+  else { try { localStorage.setItem(LS_KEY, s); } catch(e){} }
+}
+function today(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+const sumPts = rec => rec.r.reduce((s,e) => s + TIERS[e[0]].puntos, 0);
+const maxPts = dv => dv.consignas.length * MAX_PER_Q;
+const allDone = () => data.d.every(x => x.f);
+function totalPct(){
+  const tot = data.d.reduce((s,x) => s + sumPts(x), 0);
+  const max = C.inmersiones.reduce((s,dv) => s + maxPts(dv), 0);
+  return max ? tot / max * 100 : 0;
+}
+function isUnlocked(i){
+  if (i === 0) return true;
+  const prev = data.d[i-1];
+  if (!prev.f) return false;
+  if (C.desbloqueo === "diario" && !data.d[i].r.length) return prev.f < today();
+  return true;
+}
+const bandFor = (pts) => [...C.bandas].reverse().find(b => pts >= b.min) || C.bandas[0];
+
+/* ======================================================================
+   SONIDO (sintetizado, sin archivos)
+   ====================================================================== */
+const SFX = {
+  ac:null,
+  ctx(){
+    if (!data.snd) return null;
+    if (!this.ac){ const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; try { this.ac = new A(); } catch(e){ return null; } }
+    if (this.ac.state === "suspended") this.ac.resume();
+    return this.ac;
+  },
+  tone(f0, f1, dur, type, peak, delay){
+    const ac = this.ctx(); if (!ac) return;
+    const t = ac.currentTime + (delay||0), o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || "square"; o.frequency.setValueAtTime(f0, t);
+    if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak || .06, t + .012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + dur + .05);
+  },
+  play(name, arg){
+    switch(name){
+      case "click": this.tone(660, 880, .06, "square", .04); break;
+      case "submit": this.tone(520, 780, .08, "square", .05); break;
+      case "reject": this.tone(240, 170, .16, "sawtooth", .04); break;
+      case "bad": this.tone(392, 262, .28, "triangle", .08); break;
+      case "tick": this.tone(1250, 0, .035, "square", .025); break;
+      case "descend": this.tone(320, 110, Math.max(.3, arg/1000), "sine", .035); break;
+      case "miss": this.tone(196, 82, .6, "triangle", .1); break;
+      case "land": { const notes = [262,330,392,523,659,784]; const k = Math.min(arg, 5);
+        for (let i=0;i<=k;i++) this.tone(notes[i], 0, .13, "square", .05, i*.075);
+        if (arg >= 5) this.tone(1047, 1568, .5, "triangle", .07, .5); break; }
+      case "done": [523,659,784,1047].forEach((f,i) => this.tone(f, 0, .18, "square", .05, i*.11)); break;
+    }
+  }
+};
+
+/* ======================================================================
+   ESCENARIO
+   ====================================================================== */
+const SURF = 190, PX = 1.5, START = SURF - 66;   // con 0 m la jaula queda asomada en la boca del pozo
+const MAXD = Math.max(...C.inmersiones.map(maxPts));
+const WORLD_H = START + MAXD * PX + 300;
+world.style.height = WORLD_H + "px";
+world.style.setProperty("--surf", SURF + "px");
+const CABLE_TOP = SURF - 128;
+const HZ_PTS = [45, 115, 185, 255, 325, 395].filter(p => p <= MAXD);
+const hzSvg = '<svg viewBox="0 0 22 20"><path d="M11 1 21 19H1z" fill="#ffc72c" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/><rect x="10" y="7" width="2" height="6" fill="#1a1a1a"/><rect x="10" y="15" width="2" height="2" fill="#1a1a1a"/></svg>';
+$("hazards").innerHTML = HZ_PTS.map((p,i) => `<div class="hz" data-p="${p}" style="top:${START + p*PX + 40}px;left:calc(50% ${i%2 ? "+" : "-"} 52px)">${hzSvg}</div>`).join("");
+const hzEls = [...document.querySelectorAll(".hz")];
+
+const Stage = {
+  pts:0, sideBottom:[-1e9, -1e9],
+  y(p){ return START + p * PX; },
+  place(p, dur, ease){
+    const tr = dur ? `transform ${dur}ms ${ease}` : "none";
+    const y = this.y(p);
+    rig.style.transition = tr;
+    rig.style.transform = `translateY(${y}px)`;
+    cable.style.transition = dur ? `height ${dur}ms ${ease}` : "none";
+    cable.style.height = (y - CABLE_TOP + 2) + "px";
+    this.camera(p, dur, ease);
+  },
+  camera(p, dur, ease){
+    const h = stageEl.clientHeight || 400;
+    let cam = this.y(p) - h * 0.40;
+    cam = Math.max(0, Math.min(cam, WORLD_H - h));
+    world.style.transition = dur ? `transform ${dur}ms ${ease}` : "none";
+    world.style.transform = `translateY(${-cam}px)`;
+  },
+  reveal(p){ hzEls.forEach(el => { if (+el.dataset.p <= p + 20) el.classList.add("seen"); }); },
+  reset(){ marks.innerHTML = ""; this.pts = 0; this.sideBottom = [-1e9, -1e9]; hzEls.forEach(el => el.classList.remove("seen")); this.place(0, 0); this.counter(0, true); },
+  counter(to, instant){
+    const from = +depthEl.textContent || 0;
+    if (instant || REDUCED){ depthEl.textContent = to; return; }
+    const t0 = performance.now(), d = 700;
+    const step = now => { const k = Math.min(1, (now - t0)/d), e = 1 - Math.pow(1-k, 3);
+      depthEl.textContent = Math.round(from + (to - from) * e);
+      if (k < 1) requestAnimationFrame(step); else { depthEl.classList.remove("slam"); void depthEl.offsetWidth; depthEl.classList.add("slam"); } };
+    requestAnimationFrame(step);
+  },
+  chip(p, label, tierIdx){
+    const t = TIERS[tierIdx], el = document.createElement("div");
+    // Lado con más espacio libre; si aun así choca, se desplaza hacia abajo
+    const want = this.y(p) + 30, sb = this.sideBottom;
+    const s = (sb[0] <= sb[1]) ? 0 : 1;
+    const top = Math.max(want, sb[s] + 6);
+    el.className = "chip " + (s ? "r" : "l");
+    el.style.setProperty("--tc", t.color);
+    el.style.top = top + "px";
+    el.innerHTML = `${esc(label)}<small>${esc(t.nombre)} · +${t.puntos} m</small>`;
+    marks.appendChild(el);
+    sb[s] = top + (el.offsetHeight || 40);
+  },
+  burst(p, color, n, spread){
+    if (REDUCED) return;
+    const y = this.y(p) + 86;
+    for (let i=0;i<n;i++){
+      const s = document.createElement("i"); s.className = "p";
+      const a = Math.PI + Math.random()*Math.PI, r = spread*(.4 + Math.random()*.8);
+      s.style.cssText = `left:calc(50% + ${(Math.random()*40-20).toFixed(0)}px);top:${y}px;--pc:${color};--dx:${(Math.cos(a)*r).toFixed(0)}px;--dy:${(Math.sin(a)*r*.9).toFixed(0)}px;--pd:${700+Math.random()*600|0}ms`;
+      marks.appendChild(s); setTimeout(() => s.remove(), 1400);
+    }
+  },
+  flash(color, op, ms){
+    if (REDUCED) return;
+    flashEl.style.transition = "none"; flashEl.style.background = color; flashEl.style.opacity = op;
+    requestAnimationFrame(() => requestAnimationFrame(() => { flashEl.style.transition = `opacity ${ms}ms ease-out`; flashEl.style.opacity = 0; }));
+  },
+  shake(){ if (REDUCED) return; stageEl.classList.remove("shake"); void stageEl.offsetWidth; stageEl.classList.add("shake"); },
+  // Muestra el recorrido completo de una inmersión sin animar (al reanudar o repasar)
+  replay(rec, dv){
+    this.reset();
+    rec.r.forEach((e,i) => { const t = TIERS[e[0]]; this.pts += t.puntos;
+      this.chip(this.pts, e[0] === MISS ? "—" : dv.consignas[i].r[e[1]].t, e[0]); });
+    this.place(this.pts, 0); this.reveal(this.pts); this.counter(this.pts, true);
+  },
+  descend(tierIdx, label){
+    return new Promise(res => {
+      const t = TIERS[tierIdx];
+      if (tierIdx === MISS){
+        SFX.play("miss"); this.shake(); this.flash("rgba(255,90,95,.5)", .35, 500);
+        setTimeout(() => { this.chip(this.pts, "—", tierIdx); res(); }, REDUCED ? 50 : 650);
+        return;
+      }
+      const durs = { obvio:1000, trampa:1000, comun:1300, agudo:1650, experto:2000, inspector:2400 };
+      const dur = REDUCED ? 0 : durs[t.k];
+      this.pts += t.puntos;
+      const p = this.pts;
+      SFX.play("descend", dur);
+      this.place(p, dur, "cubic-bezier(.45,.05,.25,1)");
+      setTimeout(() => {
+        this.chip(p, label, tierIdx); this.reveal(p); this.counter(p);
+        SFX.play("land", tierIdx);
+        const col = getComputedStyle(document.documentElement).getPropertyValue("--t-" + t.k).trim() || "#fff";
+        this.burst(p, col, 6 + tierIdx*4, 40 + tierIdx*14);
+        if (tierIdx >= TI.agudo) this.flash(col, tierIdx >= TI.inspector ? .55 : .25, tierIdx >= TI.inspector ? 900 : 450);
+        if (tierIdx >= TI.inspector) this.shake();
+        res();
+      }, dur + 40);
+    });
+  }
+};
+window.addEventListener("resize", () => Stage.camera(Stage.pts, 0));
+
+/* ======================================================================
+   VISTAS
+   ====================================================================== */
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function live(msg){ const l = $("live"); l.textContent = ""; setTimeout(() => l.textContent = msg, 30); }
+const S = { dive:-1, pi:0, timer:null, deadline:0, lastTick:0, busy:false, pending:-1, ended:false };
+
+function tierLegend(){
+  return TIER_KEYS.filter(k => k !== "miss").map(k => { const t = TIERS[TI[k]];
+    return `<li style="--tc:${t.color}"><i></i><div>${esc(t.nombre)} <span>— ${esc(t.desc)}</span></div><b>+${t.puntos} m</b></li>`; }).join("");
+}
+
+function renderHub(){
+  stopTimer(); S.dive = -1;
+  Stage.reset();
+  const cards = C.inmersiones.map((dv,i) => {
+    const rec = data.d[i], open = isUnlocked(i), pts = sumPts(rec);
+    let st, btn, cls = "dive";
+    if (rec.f){ cls += " done"; st = `✓ ${pts} m · ${esc(bandTier(pts, dv))}`; btn = `<button class="btn sm" data-act="review" data-i="${i}">Repasar</button>`; }
+    else if (open && rec.r.length){ cls += " open"; st = `En curso · ${rec.r.length}/${dv.consignas.length}`; btn = `<button class="btn primary sm" data-act="dive" data-i="${i}">Continuar ▸</button>`; }
+    else if (open){ cls += " open"; st = `${dv.consignas.length} consignas`; btn = `<button class="btn primary sm" data-act="dive" data-i="${i}">Bajar ▸</button>`; }
+    else { st = (C.desbloqueo === "diario" && data.d[i-1].f) ? "🔒 Se abre mañana" : "🔒 Completa la anterior"; btn = ""; }
+    return `<div class="${cls}"><div class="num">${i+1}</div><div class="txt"><h3>${esc(dv.titulo)}</h3><p>${esc(dv.sub)}</p><p class="st">${st}</p></div>${btn}</div>`;
+  }).join("");
+
+  view.innerHTML = `
+    <header>
+      <p class="eyebrow">${esc(C.antetitulo)}</p>
+      <h1 class="title">${esc(C.titulo)}</h1>
+      <div class="tapebar" aria-hidden="true"></div>
+      <p class="lead">${esc(C.lema)}</p><p class="lead">Prueba Oficina segura: cuatro consignas, sin límite de tiempo por defecto. Puedes activar el reloj si quieres un reto adicional.</p>
+    </header>
+    <ol class="how">
+      <li><span class="n">1</span><span>Cada inmersión tiene <b>4 consignas</b>. Responde con tus palabras${data.nt ? "" : ` en <b>${C.segundos} segundos</b>`}.</span></li>
+      <li><span class="n">2</span><span>Si es correcta, bajas. <b>Los metros premian ampliar la mirada según las categorías del juego.</b></span></li>
+      <li><span class="n">3</span><span>Al final de cada consigna verás <b>un hallazgo para ampliar tu mirada</b>.</span></li>
+    </ol>
+    <p class="lead">Los metros son puntos del juego: las categorías están definidas en el contenido, no calculadas con respuestas de participantes. La puntuación no mide la gravedad del peligro ni certifica competencia en SST. Una respuesta con menos metros puede referirse a un peligro grave.</p>
+    ${allDone() ? finalBlock() + demoContact() : ""}
+    <section class="dives" aria-label="Inmersiones">${cards}</section>
+    <div class="opts">
+      <button class="toggle" data-act="snd" aria-pressed="${!!data.snd}">Sonido: ${data.snd ? "sí" : "no"}</button>
+      <button class="toggle" data-act="nt" aria-pressed="${!data.nt}">Tiempo: ${data.nt ? "sin límite" : C.segundos + " s"}</button>
+    </div>
+    <details class="legend"><summary>¿Cómo se asignan los metros?</summary><p class="lead">Los valores de cada categoría son reglas de esta actividad para incentivar la exploración de distintas perspectivas.</p><ul class="tiers">${tierLegend()}</ul></details>`;
+  const first = view.querySelector(".btn.primary"); if (first && document.activeElement === document.body) first.focus({ preventScroll:true });
+}
+
+function bandTier(pts){ const b = bandFor(pts); return b.txt.split(".")[0]; }
+
+function demoContact(){
+  return `<section class="qcard" style="margin-top:18px">
+    <p class="qnum">DEMO COMPLETADA</p>
+    <h2 style="margin-top:0">Lleva Ojo Experto a tu empresa</h2>
+    <p class="lead">Probaste Oficina segura. Consulta por las inmersiones de Almacén y cargas y Emergencias, o conversemos sobre una adaptación a los riesgos y procedimientos de tu organización.</p>
+    <div class="row demo-actions">
+      <a class="btn primary" href="/?demo=ojo-experto#contacto" target="_top" rel="noopener noreferrer">Quiero algo así para mi equipo ↗</a>
+      <button class="btn" data-act="demo-replay">Volver a jugar</button>
+    </div>
+  </section>`;
+}
+function finalBlock(){
+  const tot = data.d.reduce((s,x) => s + sumPts(x), 0);
+  const blind = [];
+  C.inmersiones.forEach((dv,i) => data.d[i].r.forEach((e,j) => {
+    if (e[0] === MISS || e[0] <= TI.trampa) blind.push(dv.consignas[j].hallazgo);
+  }));
+  return `<section class="qcard" style="border-top-color:var(--ok)">
+    <p class="qnum" style="color:var(--ok)">RECORRIDO DE DEMOSTRACIÓN COMPLETADO</p>
+    <p class="big">${tot}<small>m en total</small></p>
+    <p class="verdict">Llegaste al ${Math.round(totalPct())}% de la profundidad máxima.</p>
+  </section>
+  <h2 class="sec">Hallazgos para repasar</h2>
+  ${blind.length ? `<ul class="blind">${blind.map(h => `<li><b>${esc(h.t)}.</b> ${esc(h.txt)}</li>`).join("")}</ul>`
+    : `<p class="lead" style="margin:0">Puedes volver a las inmersiones para repasar otros hallazgos y seguir ampliando tu mirada.</p>`}`;
+}
+
+function startDive(i){
+  SFX.play("click");
+  S.dive = i; S.ended = false;
+  const rec = data.d[i], dv = C.inmersiones[i];
+  Stage.replay(rec, dv);
+  if (rec.r.length >= dv.consignas.length) return renderSummary(i);
+  S.pi = rec.r.length;
+  renderPrompt();
+}
+
+function dotsHtml(){
+  const dv = C.inmersiones[S.dive], rec = data.d[S.dive];
+  return dv.consignas.map((_,k) => k < rec.r.length ? `<i class="done" style="--tc:${TIERS[rec.r[k][0]].color}"></i>` : k === S.pi ? `<i class="cur"></i>` : "<i></i>").join("");
+}
+
+function renderPrompt(){
+  const dv = C.inmersiones[S.dive], p = dv.consignas[S.pi];
+  S.busy = false; S.pending = -1; S.ended = false;
+  view.innerHTML = `
+    <div class="playhead"><p class="eyebrow">Inmersión ${S.dive+1} · ${esc(dv.titulo)}</p><div class="dots" aria-hidden="true">${dotsHtml()}</div></div>
+    <div class="qcard"><p class="qnum">CONSIGNA ${S.pi+1} / ${dv.consignas.length}</p><h2 class="q" id="qtext">${esc(p.q)}</h2></div>
+    <div class="timer${data.nt ? " off" : ""}" id="timer"><div class="tbar"><i id="tbar"></i></div><span class="tnum" id="tnum">${data.nt ? "∞" : C.segundos}</span></div>
+    <form class="ansform" id="ansForm" autocomplete="off">
+      <input id="ans" maxlength="80" placeholder="Escribe tu respuesta…" aria-label="Tu respuesta" aria-describedby="qtext" autocapitalize="off" spellcheck="false">
+      <button class="btn primary" type="submit" id="sendBtn">Inspeccionar ▸</button>
+    </form>
+    <div class="msg" id="msg" role="status"></div>
+    <div id="reveal"></div>
+    <button class="linkbtn" data-act="hub">‹ Volver al inicio (tu avance se guarda)</button>`;
+  $("ansForm").addEventListener("submit", e => { e.preventDefault(); submit(); });
+  $("ans").focus({ preventScroll:true });
+  startTimer();
+}
+
+function setMsg(html, warn){ const m = $("msg"); if (!m) return; m.className = "msg" + (warn ? " warn" : ""); m.innerHTML = html; }
+
+function submit(){
+  if (S.busy || S.ended) return;
+  S.pending = -1;
+  const inp = $("ans"), raw = inp.value.trim();
+  const p = C.inmersiones[S.dive].consignas[S.pi];
+  const m = matchAnswer(raw, p);
+  if (m.type === "short"){ setMsg("Escribe una respuesta."); return; }
+  if (m.type === "ans"){ SFX.play("submit"); return resolve(m.idx, raw); }
+  if (m.type === "bad"){
+    SFX.play("bad");
+    setMsg(`<b>«${esc(raw)}» no aplica.</b> ${esc(p.malas[m.idx].msg)} Intenta con otra.`, true);
+    live("No aplica. " + p.malas[m.idx].msg);
+    inp.value = ""; inp.focus(); return;
+  }
+  if (m.type === "suggest"){
+    S.pending = m.idx; S.pendingRaw = raw;
+    setMsg(`¿Quisiste decir <b>«${esc(p.r[m.idx].t)}»</b>?<div class="row"><button class="btn primary sm" type="button" data-act="yes">Sí</button><button class="btn sm" type="button" data-act="no">No, otra</button></div>`, true);
+    live(`¿Quisiste decir ${p.r[m.idx].t}?`);
+    view.querySelector('[data-act="yes"]').focus();
+    return;
+  }
+  SFX.play("reject");
+  const f = $("ansForm"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
+  setMsg(`Aún no reconocemos «${esc(raw)}». Puede ser una respuesta válida que no esté en nuestra lista. Prueba con una frase más breve o con otras palabras.`);
+  live("Respuesta no reconocida. Intenta con otras palabras.");
+  inp.select();
+}
+
+/* Registra la respuesta (respIdx = -1 si se acabó el tiempo) */
+function resolve(respIdx, raw){
+  if (S.ended) return;
+  S.ended = true; S.busy = true; stopTimer();
+  const dv = C.inmersiones[S.dive], p = dv.consignas[S.pi], rec = data.d[S.dive];
+  const tierIdx = respIdx < 0 ? MISS : TI[p.r[respIdx].n];
+  const inp = $("ans"); if (inp) inp.disabled = true;
+  const sb = $("sendBtn"); if (sb) sb.disabled = true;
+  setMsg("");
+  rec.r.push([tierIdx, respIdx]);
+  const finishedDive = rec.r.length === dv.consignas.length;
+  if (finishedDive) rec.f = today();
+  save();
+  LMS.interaction(`${dv.id}_c${S.pi+1}`, respIdx < 0 ? "(sin respuesta)" : raw, respIdx >= 0, TIERS[tierIdx].puntos);
+  LMS.score(totalPct());
+  if (allDone()) LMS.complete(); else LMS.commit();
+
+  const label = respIdx < 0 ? "—" : p.r[respIdx].t;
+  Stage.descend(tierIdx, label).then(() => showReveal(tierIdx, respIdx, finishedDive));
+}
+
+function showReveal(tierIdx, respIdx, finishedDive){
+  const dv = C.inmersiones[S.dive], p = dv.consignas[S.pi], t = TIERS[tierIdx];
+  const resp = respIdx >= 0 ? p.r[respIdx] : null;
+  const obv = p.r.filter(r => r.n === "obvio").map(r => r.t).slice(0,3);
+  const gotIt = resp && resp.n === "inspector";
+  const dots = view.querySelector(".dots"); if (dots) dots.innerHTML = dotsHtml();
+  $("reveal").innerHTML = `
+    <div class="reveal" style="--tc:${t.color}">
+      <div class="rv-head"><span class="badge">${esc(t.nombre)}</span><span class="rv-pts">+${t.puntos} m</span></div>
+      <p class="rv-ans">${resp ? `Tu respuesta: <b>${esc(resp.t)}</b>` : "Se acabó el tiempo sin una respuesta válida."}</p>
+      ${resp ? `<p class="rv-blurb">${esc(resp.nota || t.desc)}</p>` : ""}
+      ${obv.length ? `<div class="rv-box"><h4>A simple vista</h4><p>${obv.map(esc).join(" · ")}</p></div>` : ""}
+      <div class="rv-box ins"><h4>${gotIt ? "¡Lo encontraste! Más allá de lo evidente" : "Más allá de lo evidente"}</h4><p><b>${esc(p.hallazgo.t)}.</b> ${esc(p.hallazgo.txt)}</p></div>
+      <div class="row"><button class="btn primary" data-act="next">${finishedDive ? "Ver resultado ▸" : "Siguiente consigna ▸"}</button></div>
+    </div>`;
+  live(`${t.nombre}, más ${t.puntos} metros. ${resp ? "Tu respuesta: " + resp.t + "." : "Sin respuesta."} Más allá de lo evidente: ${p.hallazgo.t}.`);
+  const nb = view.querySelector('[data-act="next"]');
+  nb.focus({ preventScroll:true });
+  $("reveal").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block:"nearest" });
+  S.busy = false;
+}
+
+function renderSummary(i){
+  stopTimer();
+  const dv = C.inmersiones[i], rec = data.d[i], pts = sumPts(rec), band = bandFor(pts);
+  const nextI = i + 1, hasNext = nextI < C.inmersiones.length;
+  const nextOpen = hasNext && isUnlocked(nextI) && !data.d[nextI].f;
+  const rows = rec.r.map((e,k) => { const t = TIERS[e[0]], p = dv.consignas[k];
+    return `<li style="--tc:${t.color}"><span class="lq">${esc(p.q)}</span><span class="la"><span>${e[0] === MISS ? "Sin respuesta" : esc(p.r[e[1]].t)}</span><em>${esc(t.nombre)} · +${t.puntos}</em></span></li>`; }).join("");
+  view.innerHTML = `
+    <div><p class="eyebrow">Inmersión ${i+1} · ${esc(dv.titulo)}</p>
+      <p class="big">${pts}<small>/ ${maxPts(dv)} m</small></p>
+      <p class="verdict">${esc(band.txt)}</p><p class="lead">Los metros son puntos del juego: las categorías están definidas en el contenido, no calculadas con respuestas de participantes. La puntuación no mide la gravedad del peligro ni certifica competencia en SST. Una respuesta con menos metros puede referirse a un peligro grave.</p></div>
+    <ul class="log">${rows}</ul>
+    ${allDone() ? `<p class="lead" style="margin:0;color:var(--ok)">¡Completaste Oficina segura! Esta es la inmersión incluida en la demo.</p>` : ""}
+    ${allDone() ? demoContact() : ""}
+    <div class="row">
+      ${nextOpen ? `<button class="btn primary" data-act="dive" data-i="${nextI}">Inmersión ${nextI+1} ▸</button>` : ""}
+      <button class="btn${nextOpen ? "" : " primary"}" data-act="hub">Volver al inicio</button>
+    </div>
+    ${hasNext && !isUnlocked(nextI) && C.desbloqueo === "diario" ? `<p class="lead" style="margin:0;color:var(--muted)">La siguiente inmersión se abre mañana.</p>` : ""}`;
+  live(`Inmersión ${i+1} completada: ${pts} metros. ${band.txt}`);
+  if (allDone() && S.dive === i && !S.celebrated){ S.celebrated = true; SFX.play("done"); }
+  view.querySelector(".btn").focus({ preventScroll:true });
+}
+
+/* ---------- Temporizador ---------- */
+function startTimer(){
+  stopTimer();
+  if (data.nt) return;
+  S.deadline = performance.now() + C.segundos * 1000; S.lastTick = C.segundos + 1;
+  const loop = now => {
+    const left = Math.max(0, S.deadline - now), secs = Math.ceil(left / 1000);
+    const bar = $("tbar"), num = $("tnum"), tm = $("timer");
+    if (!bar) return;
+    bar.style.transform = `scaleX(${left / (C.segundos*1000)})`;
+    num.textContent = secs;
+    tm.classList.toggle("low", secs <= 5);
+    if (secs <= 5 && secs < S.lastTick && secs > 0) SFX.play("tick");
+    S.lastTick = secs;
+    if (left <= 0){ S.timer = null; if (S.pending >= 0) return resolve(S.pending, S.pendingRaw); return resolve(-1, ""); }
+    S.timer = requestAnimationFrame(loop);
+  };
+  S.timer = requestAnimationFrame(loop);
+}
+function stopTimer(){ if (S.timer) cancelAnimationFrame(S.timer); S.timer = null; }
+
+/* ---------- Eventos ---------- */
+view.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const act = b.dataset.act, i = +b.dataset.i;
+  switch(act){
+    case "demo-replay": {
+      stopTimer();
+      try { localStorage.removeItem(LS_KEY); } catch(e){}
+      data = { v:1, d:C.inmersiones.map(() => ({ r:[], f:0 })), snd:data.snd, nt:data.nt };
+      S.celebrated = false;
+      save();
+      startDive(0);
+      break;
+    }
+    case "dive": startDive(i); break;
+    case "review": { S.dive = i; Stage.replay(data.d[i], C.inmersiones[i]); renderSummary(i); break; }
+    case "hub": SFX.play("click"); renderHub(); break;
+    case "next": SFX.play("click"); if (S.pi + 1 >= C.inmersiones[S.dive].consignas.length) renderSummary(S.dive); else { S.pi++; renderPrompt(); } break;
+    case "yes": if (S.pending >= 0) resolve(S.pending, S.pendingRaw); break;
+    case "no": { S.pending = -1; setMsg(""); const inp = $("ans"); inp.value = ""; inp.focus(); break; }
+    case "snd": data.snd = data.snd ? 0 : 1; save(); SFX.play("click"); renderHub(); view.querySelector('[data-act="snd"]').focus(); break;
+    case "nt": data.nt = data.nt ? 0 : 1; save(); SFX.play("click"); renderHub(); view.querySelector('[data-act="nt"]').focus(); break;
+  }
+});
+
+/* ======================================================================
+   ARRANQUE
+   ====================================================================== */
+LMS.init();
+load();
+const badge = $("lmsBadge");
+badge.innerHTML = LMS.ok ? `<span class="dot on"></span>LMS conectado · SCORM ${LMS.version === 2004 ? "2004" : "1.2"}` : `<span class="dot"></span>Vista previa · sin LMS`;
+if (!LMS.ok){
+  const rb = $("resetBtn"); rb.hidden = false;
+  rb.addEventListener("click", () => { try { localStorage.removeItem(LS_KEY); } catch(e){} data = { v:1, d:[], snd:data.snd, nt:data.nt }; load(); S.celebrated = false; renderHub(); });
+}
+if (allDone()) { LMS.score(totalPct()); LMS.complete(); }
+const bye = () => LMS.finish(allDone());
+window.addEventListener("pagehide", bye);
+window.addEventListener("beforeunload", bye);
+renderHub();
+})();
+</script>
+</body>
+</html>
