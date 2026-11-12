@@ -1,6 +1,13 @@
 import Image from "next/image";
 
 export function DemoCover({ kind }: { kind: string }) {
+  if (kind === "ruta-segura") {
+    return (
+      <div className="relative aspect-video overflow-hidden bg-[#11151b]">
+        <Image src="/projects/ruta-segura/cover.png" alt="Vista del simulador Ruta segura desde la cabina, con el tablero y el GPS" fill sizes="(min-width: 768px) 550px, 100vw" className="object-cover" />
+      </div>
+    );
+  }
   if (kind === "diversidad") {
     return (
       <div className="relative aspect-video overflow-hidden bg-surface">

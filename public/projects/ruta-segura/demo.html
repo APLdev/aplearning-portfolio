@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ruta Segura · Simulador de conducción</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Practica una conducción segura: sigue el GPS, respeta las señales y llega a tu destino sin infracciones.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Simulador 16:9 con controles de conducción. */
+:root{
+  --asfalto:#11151b;
+  --panel:#1a2029;
+  --panel-2:#222a35;
+  --linea:#2f3a48;
+  --tinta:#e8edf2;
+  --tenue:#97a4b3;
+  --ambar:#f2b632;
+  --rojo:#e5483d;
+  --verde:#3cc27f;
+  --azul:#4aa3ff;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+body{margin:0}
+body{background:var(--asfalto);color:var(--tinta);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:1280px;margin:0 auto;padding-block:18px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+.head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.head h1{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.02em;margin:0;text-transform:uppercase;text-wrap:balance}
+.head p{margin:0;color:var(--tenue);min-width:0}
+
+.stage{position:relative;width:100%;max-width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:10px;background:#cfe2ec;container-type:inline-size;outline:none;user-select:none;-webkit-user-select:none;touch-action:none}
+.stage:focus-visible{box-shadow:0 0 0 3px var(--ambar)}
+.stage canvas.gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+#cockpit{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.ov{position:absolute;pointer-events:none}
+
+.hud{top:1.4%;left:1.4%;right:1.4%;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.pill{display:flex;align-items:center;gap:.6em;background:rgba(14,19,26,.86);color:var(--tinta);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:.35em .9em;font-size:clamp(9px,1.15cqw,15px);white-space:nowrap}
+.pill b{font-family:var(--display);font-weight:600;letter-spacing:.03em;font-size:1.15em}
+.pill .muted{color:var(--tenue)}
+.hud-r{display:flex;gap:.5em;align-items:center}
+.limit{width:2.6em;height:2.6em;border-radius:50%;background:#fff;border:.32em solid var(--rojo);display:grid;place-items:center;color:#111;font-family:var(--display);font-weight:700;font-size:clamp(10px,1.3cqw,17px);font-variant-numeric:tabular-nums}
+
+.banner{top:19%;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.7em;background:rgba(14,19,26,.9);border-left:.35em solid var(--rojo);border-radius:6px;padding:.45em 1em .45em .8em;font-size:clamp(9px,1.25cqw,16px);white-space:nowrap}
+.banner[data-k="amber"]{border-left-color:var(--ambar)}
+.banner[data-k="info"]{border-left-color:var(--azul)}
+.banner .t{font-family:var(--display);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:1.15em}
+.banner .s{color:var(--tenue)}
+.dot{width:.7em;height:.7em;border-radius:50%;background:var(--rojo);box-shadow:0 0 .6em var(--rojo)}
+.banner[data-k="amber"] .dot{background:var(--ambar);box-shadow:0 0 .6em var(--ambar)}
+.banner[data-k="info"] .dot{background:var(--azul);box-shadow:none}
+
+.toasts{top:30%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4em;font-size:clamp(9px,1.2cqw,15px)}
+.toast{background:rgba(14,19,26,.92);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:.45em .9em;display:flex;gap:.6em;align-items:center;animation:pop .25s ease-out;white-space:nowrap}
+.toast .pts{font-family:var(--display);font-weight:700;font-size:1.15em;font-variant-numeric:tabular-nums}
+.toast.bad .pts{color:var(--rojo)} .toast.good .pts{color:var(--verde)} .toast.info .pts{color:var(--ambar)}
+@keyframes pop{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
+
+#gps{position:absolute;left:61.7634375%;top:62.1047778%;width:17.0978125%;height:17.022%;border-radius:4px;pointer-events:none}
+
+
+.screen{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,14,19,.78);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);overflow:auto;padding:16px}
+.card{max-width:560px;width:100%;background:var(--panel);border:1px solid var(--linea);border-radius:10px;padding:clamp(14px,2.4cqw,28px);display:flex;flex-direction:column;gap:12px}
+.card .eyebrow{font-family:var(--display);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ambar);font-size:13px}
+.card h2{font-family:var(--display);font-weight:700;font-size:clamp(22px,3.4cqw,38px);line-height:1.05;margin:0;text-transform:uppercase;text-wrap:balance}
+.card p{margin:0;color:var(--tenue)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:0;padding:0;list-style:none}
+.rules li{background:var(--panel-2);border-radius:6px;padding:8px 10px;font-size:13.5px;min-width:0}
+.rules li b{display:block;font-family:var(--display);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:14px;color:var(--tinta)}
+.btn{font:inherit;font-family:var(--display);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:17px;border:0;border-radius:6px;padding:10px 18px;cursor:pointer;background:var(--ambar);color:#15110a}
+.btn:hover{filter:brightness(1.07)}
+.btn:focus-visible,.ctl:focus-visible{outline:3px solid var(--tinta);outline-offset:2px}
+.result{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.big{font-family:var(--display);font-weight:700;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.verdict{font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:4px;font-size:16px}
+.verdict.ok{background:var(--verde);color:#08160f}.verdict.no{background:var(--rojo);color:#1a0705}
+.list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.list li{display:flex;justify-content:space-between;gap:12px;background:var(--panel-2);border-radius:6px;padding:6px 10px;font-size:14px}
+.list li span:last-child{font-variant-numeric:tabular-nums;font-weight:600}
+
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.ctl{font:inherit;font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:16px;color:var(--tinta);background:var(--panel);border:1px solid var(--linea);border-radius:8px;padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:8px;touch-action:none;user-select:none;-webkit-user-select:none}
+.ctl:hover{background:var(--panel-2)}
+.ctl[aria-pressed="true"]{background:#173527;border-color:var(--verde);color:#bff3d6}
+.ctl.gas{border-color:#2d5a43}.ctl.brake{border-color:#5a2d2d}
+.ctl.gas.on{background:#173527}.ctl.brake.on{background:#3a1717}
+.ctl .k{font-family:var(--body);font-size:12px;color:var(--tenue);border:1px solid var(--linea);border-radius:4px;padding:0 5px;text-transform:none;letter-spacing:0}
+.grow{flex:1}
+.ctl.ghost{background:transparent}
+
+@media (prefers-reduced-motion:reduce){.toast{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="head">
+    <h1>Ruta Segura</h1>
+    <p>Simulador de conducción · Seguridad vial</p>
+  </div>
+
+  <div class="stage" id="stage" tabindex="0" aria-label="Simulador de manejo. Usa las flechas del teclado para conducir.">
+    <svg xmlns="http://www.w3.org/2000/svg" id="cockpit" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="gRoof" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cfc8bb" />
+      <stop offset="1" stop-color="#b3ab9d" />
+    </linearGradient>
+    <linearGradient id="gPillar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#bdb5a7" />
+      <stop offset="1" stop-color="#958d80" />
+    </linearGradient>
+    <linearGradient id="gPillarR" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#bdb5a7" />
+      <stop offset="1" stop-color="#958d80" />
+    </linearGradient>
+    <linearGradient id="paint0_linear_2_48" x1="0" y1="54" x2="0" y2="475" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#40454E" />
+      <stop offset="0.18" stop-color="#2B2F36" />
+      <stop offset="1" stop-color="#15171B" />
+    </linearGradient>
+    <linearGradient id="paint1_linear_2_48" x1="-4.5" y1="116.5" x2="-4.5" y2="456.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4C525B" />
+      <stop offset="1" stop-color="#2A2E34" />
+    </linearGradient>
+    <linearGradient id="paint2_linear_2_48" x1="1422" y1="135" x2="1422" y2="475" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4C525B" />
+      <stop offset="1" stop-color="#2A2E34" />
+    </linearGradient>
+    <radialGradient id="paint3_radial_2_48" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(427.606 194.083) scale(71.4525)">
+      <stop stop-color="#232A33" />
+      <stop offset="1" stop-color="#0A0C0F" />
+    </radialGradient>
+    <radialGradient id="paint4_radial_2_48" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(663.3 194.083) scale(71.4525)">
+      <stop stop-color="#232A33" />
+      <stop offset="1" stop-color="#0A0C0F" />
+    </radialGradient>
+    <linearGradient id="paint5_linear_2_48" x1="313.78" y1="280.85" x2="313.78" y2="298.936" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9DA8B2" />
+      <stop offset="0.4" stop-color="#606C79" />
+      <stop offset="1" stop-color="#394550" />
+    </linearGradient>
+    <linearGradient id="paint6_linear_2_48" x1="493.504" y1="356.583" x2="493.504" y2="546.481" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9DA8B2" />
+      <stop offset="0.4" stop-color="#606C79" />
+      <stop offset="1" stop-color="#394550" />
+    </linearGradient>
+    <linearGradient id="paint7_linear_2_48" x1="299.086" y1="66.0854" x2="496.217" y2="558.915" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#424B57" />
+      <stop offset="0.45" stop-color="#232A33" />
+      <stop offset="1" stop-color="#151A21" />
+    </linearGradient>
+    <radialGradient id="paint8_radial_2_48" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(516.676 269.773) scale(182.55 140.671)">
+      <stop stop-color="#3A434E" />
+      <stop offset="1" stop-color="#252C35" />
+    </radialGradient>
+  </defs>
+  <path d="M0 0H1600V66C1250 94 350 94 0 66Z" fill="url(#gRoof)" />
+  <path d="M0 66 L212 74 L206 96 L0 90Z" fill="#a39b8e" />
+  <path d="M1600 66 L1388 74 L1394 96 L1600 90Z" fill="#a39b8e" />
+  <path d="M206 74 L272 80 L152 556 L84 556Z" fill="url(#gPillar)" />
+  <path d="M1394 74 L1328 80 L1448 556 L1516 556Z" fill="url(#gPillarR)" />
+  <g id="dashboardV2" transform="translate(0 425)" fill="none">
+    <path d="M0 150.348L71 133.592L152 114.741C360 72.8507 600 54 800 54C1000 54 1240 72.8507 1448 114.741L1516 129.403L1600 155.585V475H0V150.348Z" fill="url(#paint0_linear_2_48)" />
+    <path d="M0 172L150 132L178 472H0V172Z" fill="url(#paint1_linear_2_48)" />
+    <path d="M1600 175L1450 135L1422 475H1600V175Z" fill="url(#paint2_linear_2_48)" />
+    <path d="M30 275L130 255Z" fill="black" />
+    <path d="M30 275L130 255" stroke-width="10" stroke-linecap="round" stroke="#6B727C" />
+    <path d="M30 305L130 285Z" fill="black" />
+    <path d="M30 305L130 285" stroke-width="10" stroke-linecap="round" stroke="#6B727C" />
+    <path d="M30 339L130 319Z" fill="black" />
+    <path d="M30 339L130 319" stroke-width="10" stroke-linecap="round" stroke="#6B727C" />
+    <path d="M1570 275L1470 255Z" fill="black" />
+    <path d="M1570 275L1470 255" stroke-width="10" stroke-linecap="round" stroke="#6B727C" />
+    <path d="M1570 302L1470 282Z" fill="black" />
+    <path d="M1570 302L1470 282" stroke-width="10" stroke-linecap="round" stroke="#6B727C" />
+    <path d="M1570 329L1470 309Z" fill="black" />
+    <path d="M1570 329L1470 309" stroke-width="10" stroke-linecap="round" stroke="#6B727C" />
+    <path d="M924.884 132H857.116C849.872 132 844 137.87 844 145.111V177.889C844 185.13 849.872 191 857.116 191H924.884C932.128 191 938 185.13 938 177.889V145.111C938 137.87 932.128 132 924.884 132Z" fill="#14161A" />
+    <path d="M1392.88 132H1325.12C1317.87 132 1312 137.87 1312 145.111V177.889C1312 185.13 1317.87 191 1325.12 191H1392.88C1400.13 191 1406 185.13 1406 177.889V145.111C1406 137.87 1400.13 132 1392.88 132Z" fill="#14161A" />
+    <path d="M854.714 148.168H926.936ZM854.714 162.394H926.936ZM854.714 176.62H926.936Z" fill="black" />
+    <path d="M854.714 148.168H926.936M854.714 162.394H926.936M854.714 176.62H926.936" stroke-width="4" stroke="#2F343B" />
+    <path d="M1323.06 148.168H1395.29ZM1323.06 162.394H1395.29ZM1323.06 176.62H1395.29Z" fill="black" />
+    <path d="M1323.06 148.168H1395.29M1323.06 162.394H1395.29M1323.06 176.62H1395.29" stroke-width="4" stroke="#2F343B" />
+    <path d="M1259.84 123H990.156C982.89 123 977 128.876 977 136.125V284.875C977 292.124 982.89 298 990.156 298H1259.84C1267.11 298 1273 292.124 1273 284.875V136.125C1273 128.876 1267.11 123 1259.84 123Z" fill="#0B0D10" stroke-width="3" stroke="#3A3F47" />
+    <text id="stTxt" x="1125" y="329" text-anchor="middle" fill="#E8EDF2" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="700" font-size="20">DETENIDO</text>
+    <path d="M1199.35 346H1050.65C1046.43 346 1043 349.47 1043 353.75V369.25C1043 373.53 1046.43 377 1050.65 377H1199.35C1203.57 377 1207 373.53 1207 369.25V353.75C1207 349.47 1203.57 346 1199.35 346Z" fill="#22262C" />
+    <path d="M1125 353L1137 372H1113L1125 353Z" fill="#E5483D" />
+    <path d="M1065 448C1078.81 448 1090 436.807 1090 423C1090 409.193 1078.81 398 1065 398C1051.19 398 1040 409.193 1040 423C1040 436.807 1051.19 448 1065 448Z" fill="#1A1C20" stroke-width="4" stroke="#4B525B" />
+    <path d="M1185 448C1198.81 448 1210 436.807 1210 423C1210 409.193 1198.81 398 1185 398C1171.19 398 1160 409.193 1160 423C1160 436.807 1171.19 448 1185 448Z" fill="#1A1C20" stroke-width="4" stroke="#4B525B" />
+    <path d="M311 147.936C335.81 93.3546 755.097 93.3546 779.907 147.936V264.543H311V147.936Z" fill="#191C21" />
+    <path d="M427.606 259.581C460.492 259.581 487.15 232.922 487.15 200.037C487.15 167.152 460.492 140.493 427.606 140.493C394.721 140.493 368.063 167.152 368.063 200.037C368.063 232.922 394.721 259.581 427.606 259.581Z" fill="url(#paint3_radial_2_48)" stroke-width="2.7" stroke="#59616B" />
+    <path d="M663.3 259.581C696.185 259.581 722.844 232.922 722.844 200.037C722.844 167.152 696.185 140.493 663.3 140.493C630.415 140.493 603.757 167.152 603.757 200.037C603.757 232.922 630.415 259.581 663.3 259.581Z" fill="url(#paint4_radial_2_48)" stroke-width="2.7" stroke="#59616B" />
+    <path d="M384.685 224.847L378.235 228.568" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M377.987 200.037H370.544" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M384.685 175.227L378.235 171.506" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M402.797 157.116L399.075 150.665" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M427.606 150.417V142.974" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M452.416 157.116L456.138 150.665" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M470.528 175.227L476.978 171.506" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M477.226 200.037H484.669" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M470.528 224.847L476.978 228.568" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M620.379 224.847L613.929 228.568" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M613.681 200.037H606.238" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M620.379 175.227L613.929 171.506" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M638.49 157.116L634.769 150.665" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M663.3 150.417V142.974" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M688.11 157.116L691.832 150.665" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M706.221 175.227L712.672 171.506" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M712.92 200.037H720.363" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M706.221 224.847L712.672 228.568" stroke-width="1.8" stroke="#CFD6DD" />
+    <path d="M427.606 200.037L382.954 199.367" stroke-width="3.6" stroke-linecap="round" stroke="#FF4A3D" id="ndlRpm" />
+    <path d="M663.3 200.037L624.625 222.366" stroke-width="3.6" stroke-linecap="round" stroke="#FF4A3D" id="ndlSpd" />
+    <path d="M427.606 207.48C431.717 207.48 435.049 204.148 435.049 200.037C435.049 195.926 431.717 192.594 427.606 192.594C423.496 192.594 420.164 195.926 420.164 200.037C420.164 204.148 423.496 207.48 427.606 207.48Z" fill="#D7DDE3" />
+    <path d="M663.3 207.48C667.411 207.48 670.743 204.148 670.743 200.037C670.743 195.926 667.411 192.594 663.3 192.594C659.19 192.594 655.857 195.926 655.857 200.037C655.857 204.148 659.19 207.48 663.3 207.48Z" fill="#D7DDE3" />
+    <path d="M585.149 152.898H505.757C500.962 152.898 497.074 156.786 497.074 161.582V223.606C497.074 228.402 500.962 232.29 505.757 232.29H585.149C589.945 232.29 593.833 228.402 593.833 223.606V161.582C593.833 156.786 589.945 152.898 585.149 152.898Z" fill="#0F2C42" stroke-width="1.8" stroke="#1F4E72" />
+    <text id="spdTxt" x="545.5" y="187.7" text-anchor="middle" fill="#FFFFFF" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="700" font-size="32.4">0</text>
+    <text id="objTxt" x="545.5" y="218.7" text-anchor="middle" fill="#9FC4E2" font-family="Barlow, Arial, sans-serif" font-size="9.9">km/h · OBJ 30</text>
+    <path d="M506.998 125.607L524.365 113.202V120.645H541.732V130.569H524.365V138.012L506.998 125.607Z" fill="#1C4A32" id="blkL" />
+    <path d="M583.909 125.607L566.542 113.202V120.645H549.175V130.569H566.542V138.012L583.909 125.607Z" fill="#1C4A32" id="blkR" />
+    <g id="driverRig">
+      <g id="wheel">
+        <path opacity="0.3" d="M793.045 315.891C793.045 452.606 682.215 563.436 545.5 563.436C408.785 563.436 297.955 452.606 297.955 315.891C297.955 179.176 408.785 68.3462 545.5 68.3462C682.215 68.3462 793.045 179.176 793.045 315.891Z" stroke-width="42" stroke="#0C1016" />
+        <path d="M302.477 276.329L467.506 271.808L487.853 332.846L313.78 337.368L302.477 276.329ZM788.523 276.329L623.494 271.808L603.147 332.846L777.22 337.368L788.523 276.329Z" fill="#222A34" stroke-width="3" stroke="#151B23" />
+        <path d="M313.78 284.241L466.376 280.85L474.288 296.675L313.78 298.936V284.241ZM777.22 284.241L624.624 280.85L616.712 296.675L777.22 298.936V284.241Z" fill="url(#paint5_linear_2_48)" />
+        <path d="M493.504 356.583H597.496L583.932 546.481H507.068L493.504 356.583Z" fill="url(#paint6_linear_2_48)" stroke-width="3" stroke="#1C242E" />
+        <path d="M513.85 372.408H577.15L564.716 526.135H527.415L513.85 372.408Z" fill="#1B232D" />
+        <path d="M791.915 312.5C791.915 448.591 681.591 558.915 545.5 558.915C409.409 558.915 299.086 448.591 299.086 312.5C299.086 176.409 409.409 66.0854 545.5 66.0854C681.591 66.0854 791.915 176.409 791.915 312.5Z" stroke-width="34" stroke="url(#paint7_linear_2_48)" />
+        <path opacity="0.65" d="M810 312.5C810 458.579 691.579 577 545.5 577C399.421 577 281 458.579 281 312.5C281 166.421 399.421 48 545.5 48C691.579 48 810 166.421 810 312.5Z" stroke-width="1.6" stroke="#586370" />
+        <path d="M772.699 312.5C772.699 437.978 670.978 539.699 545.5 539.699C420.022 539.699 318.301 437.978 318.301 312.5C318.301 187.022 420.022 85.3013 545.5 85.3013C670.978 85.3013 772.699 187.022 772.699 312.5Z" stroke-width="2" stroke="#0E141B" />
+        <path opacity="0.3" d="M342.038 173.468C364.656 140.364 395.009 113.279 430.465 94.562C465.92 75.8453 505.407 66.0625 545.5 66.0625C585.593 66.0625 625.08 75.8453 660.535 94.562C695.991 113.279 726.344 140.364 748.962 173.468" stroke-width="3" stroke-linecap="round" stroke="#697481" />
+        <path opacity="0.45" d="M325.083 364.496C325.007 364.18 324.931 363.865 324.856 363.549M340.908 210.769C340.769 211.062 340.631 211.356 340.493 211.65M765.917 364.496C765.993 364.18 766.069 363.865 766.144 363.549M750.092 210.769C750.231 211.062 750.369 211.356 750.507 211.65M323.381 356.903C323.249 356.268 323.121 355.633 322.995 354.997M321.771 348.3C321.664 347.66 321.559 347.02 321.458 346.38M320.488 339.642C320.405 338.999 320.324 338.356 320.247 337.712M319.532 330.942C319.474 330.296 319.418 329.65 319.365 329.004M318.906 322.212C318.872 321.564 318.841 320.917 318.812 320.269M318.61 313.464C318.601 312.816 318.594 312.168 318.589 311.519M318.645 304.712C318.66 304.064 318.677 303.415 318.697 302.767M319.01 295.967C319.049 295.32 319.091 294.673 319.136 294.026M319.705 287.242C319.769 286.597 319.835 285.952 319.904 285.307M320.729 278.55C320.817 277.907 320.908 277.265 321.001 276.624M322.081 269.902C322.193 269.264 322.308 268.625 322.425 267.988M323.758 261.312C323.894 260.678 324.033 260.045 324.174 259.412M325.758 252.791C325.918 252.162 326.081 251.535 326.246 250.908M328.079 244.352C328.263 243.73 328.449 243.109 328.638 242.488M330.717 236.006C330.924 235.392 331.133 234.778 331.346 234.165M333.668 227.766C333.898 227.16 334.131 226.555 334.366 225.951M336.929 219.643C337.181 219.046 337.436 218.451 337.694 217.856M753.306 217.856C753.563 218.451 753.819 219.046 754.071 219.643M756.634 225.951C756.869 226.555 757.102 227.16 757.332 227.766M759.654 234.165C759.867 234.778 760.076 235.392 760.283 236.006M762.362 242.488C762.551 243.109 762.737 243.73 762.921 244.352M764.754 250.908C764.919 251.535 765.082 252.162 765.242 252.791M766.825 259.412C766.967 260.045 767.106 260.678 767.242 261.312M768.575 267.988C768.692 268.625 768.807 269.264 768.919 269.902M769.999 276.624C770.092 277.265 770.183 277.907 770.271 278.55M771.096 285.307C771.165 285.952 771.231 286.597 771.295 287.242M771.864 294.026C771.909 294.673 771.951 295.32 771.99 295.967M772.302 302.767C772.323 303.415 772.34 304.064 772.355 304.712M772.411 311.519C772.406 312.168 772.399 312.816 772.39 313.464M772.188 320.269C772.159 320.917 772.128 321.564 772.094 322.212M771.635 329.004C771.582 329.65 771.526 330.296 771.468 330.942M770.753 337.712C770.675 338.356 770.595 338.999 770.512 339.642M769.542 346.38C769.441 347.02 769.336 347.66 769.229 348.3M768.005 354.997C767.879 355.633 767.751 356.268 767.619 356.903" stroke-width="1.5" stroke="#66717D" />
+        <path d="M449.421 283.111C453.942 257.49 470.521 243.172 499.156 240.158H591.844C620.479 243.172 637.058 257.49 641.579 283.111L631.406 340.759C625.377 369.394 609.929 385.219 585.062 388.233H505.938C481.07 385.219 465.622 369.394 459.594 340.759L449.421 283.111Z" fill="url(#paint8_radial_2_48)" stroke-width="2" stroke="#46515E" />
+        <path opacity="0.3" d="M475.419 268.417C522.14 256.36 568.86 256.36 615.581 268.417" stroke-width="1.5" stroke="#6C7885" />
+        <path d="M545.5 320.412C559.234 320.412 570.367 313.327 570.367 304.588C570.367 295.848 559.234 288.763 545.5 288.763C531.766 288.763 520.632 295.848 520.632 304.588C520.632 313.327 531.766 320.412 545.5 320.412Z" fill="#252D37" stroke-width="2.5" stroke="#A1AEBC" />
+        <path d="M533.672 355.671H533.026L534.895 350.58H535.531L537.401 355.671H536.754L535.233 351.385H535.193L533.672 355.671ZM533.911 353.682H536.516V354.229H533.911V353.682ZM538.81 350.58V355.671H538.194V350.58H538.81ZM540.046 355.671V350.58H541.766C542.164 350.58 542.491 350.648 542.746 350.784C543.001 350.918 543.19 351.103 543.312 351.338C543.435 351.574 543.496 351.841 543.496 352.141C543.496 352.441 543.435 352.707 543.312 352.939C543.19 353.171 543.002 353.353 542.748 353.486C542.495 353.617 542.171 353.682 541.776 353.682H540.384V353.125H541.756C542.028 353.125 542.247 353.086 542.413 353.006C542.58 352.927 542.701 352.814 542.776 352.668C542.852 352.521 542.89 352.345 542.89 352.141C542.89 351.937 542.852 351.759 542.776 351.607C542.699 351.454 542.578 351.337 542.41 351.254C542.243 351.169 542.022 351.127 541.746 351.127H540.663V355.671H540.046ZM542.442 353.384L543.695 355.671H542.979L541.746 353.384H542.442ZM544.524 355.671V350.58H546.304C546.658 350.58 546.951 350.641 547.181 350.764C547.411 350.885 547.583 351.048 547.696 351.254C547.808 351.458 547.865 351.684 547.865 351.932C547.865 352.151 547.826 352.332 547.748 352.474C547.672 352.617 547.57 352.729 547.444 352.812C547.32 352.895 547.185 352.956 547.039 352.996V353.046C547.195 353.056 547.352 353.111 547.509 353.21C547.667 353.309 547.798 353.452 547.904 353.638C548.01 353.823 548.063 354.05 548.063 354.319C548.063 354.574 548.005 354.803 547.889 355.007C547.773 355.211 547.59 355.373 547.34 355.492C547.09 355.611 546.764 355.671 546.363 355.671H544.524ZM545.14 355.124H546.363C546.766 355.124 547.052 355.046 547.221 354.89C547.391 354.733 547.477 354.542 547.477 354.319C547.477 354.146 547.433 353.987 547.345 353.841C547.257 353.694 547.132 353.576 546.97 353.488C546.807 353.399 546.615 353.354 546.393 353.354H545.14V355.124ZM545.14 352.817H546.284C546.469 352.817 546.637 352.781 546.786 352.708C546.937 352.635 547.056 352.532 547.144 352.4C547.233 352.267 547.278 352.111 547.278 351.932C547.278 351.709 547.2 351.519 547.044 351.363C546.889 351.206 546.642 351.127 546.304 351.127H545.14V352.817ZM549.285 355.671H548.639L550.508 350.58H551.145L553.014 355.671H552.368L550.846 351.385H550.807L549.285 355.671ZM549.524 353.682H552.129V354.229H549.524V353.682ZM557.048 352.171C556.993 352.004 556.921 351.854 556.831 351.721C556.744 351.587 556.638 351.472 556.516 351.378C556.395 351.283 556.257 351.211 556.103 351.162C555.949 351.112 555.78 351.087 555.596 351.087C555.294 351.087 555.02 351.165 554.773 351.321C554.526 351.477 554.33 351.706 554.184 352.009C554.038 352.313 553.965 352.685 553.965 353.125C553.965 353.566 554.039 353.938 554.187 354.242C554.334 354.545 554.534 354.774 554.786 354.93C555.038 355.086 555.321 355.164 555.636 355.164C555.927 355.164 556.184 355.102 556.406 354.977C556.63 354.851 556.804 354.674 556.928 354.445C557.054 354.215 557.117 353.944 557.117 353.633L557.306 353.672H555.775V353.125H557.714V353.672C557.714 354.092 557.624 354.456 557.445 354.766C557.268 355.076 557.023 355.316 556.71 355.487C556.398 355.656 556.04 355.741 555.636 355.741C555.185 355.741 554.789 355.634 554.448 355.422C554.108 355.21 553.843 354.909 553.652 354.518C553.463 354.126 553.369 353.662 553.369 353.125C553.369 352.723 553.423 352.361 553.53 352.039C553.64 351.716 553.794 351.441 553.993 351.214C554.192 350.987 554.427 350.813 554.699 350.692C554.97 350.571 555.27 350.51 555.596 350.51C555.865 350.51 556.115 350.551 556.347 350.632C556.58 350.712 556.788 350.825 556.971 350.973C557.155 351.119 557.308 351.293 557.431 351.497C557.553 351.699 557.638 351.924 557.684 352.171H557.048Z" fill="#8793A1" />
+        <path d="M421.162 304.588H401.947C398.201 304.588 395.164 307.624 395.164 311.37V317.021C395.164 320.767 398.201 323.803 401.947 323.803H421.162C424.908 323.803 427.944 320.767 427.944 317.021V311.37C427.944 307.624 424.908 304.588 421.162 304.588Z" fill="#161E28" stroke="#495562" />
+        <path d="M689.053 304.588H669.838C666.092 304.588 663.056 307.624 663.056 311.37V317.021C663.056 320.767 666.092 323.803 669.838 323.803H689.053C692.799 323.803 695.835 320.767 695.835 317.021V311.37C695.835 307.624 692.799 304.588 689.053 304.588Z" fill="#161E28" stroke="#495562" />
+        <path d="M406.468 313.63H416.641ZM411.554 309.109V318.152ZM673.229 313.63H685.662Z" fill="black" />
+        <path d="M406.468 313.63H416.641M411.554 309.109V318.152M673.229 313.63H685.662" stroke-width="1.4" stroke-linecap="round" stroke="#9BA8B5" />
+      </g>
+      <g id="handL">
+        <path d="M202.061 254.495C200.934 260.149 215.687 309.149 223.204 332.943C213.337 344.251 202.766 370.117 239.413 383.121C276.061 396.125 298.848 381.001 305.661 371.813C312.474 354.616 324.69 320.928 330.328 318.101C335.966 315.274 352.88 301.847 357.813 291.952C361.572 279.702 370.499 253.223 373.318 236.827C376.137 220.431 365.963 187.808 361.5 176.5C355 185 343.821 197.49 342.309 204.317C339.49 217.038 333.259 222.933 329.5 230C319.633 217.985 308.5 206.721 308.5 194C316.5 177.5 329.067 159.154 334 153.5C330.241 148.317 318.629 136.046 305.661 140.004C292.693 143.962 283.344 160.499 280.29 168.274C272.302 172.514 252.24 184.952 235.89 200.783C215.452 220.572 203.471 247.428 202.061 254.495Z" fill="#EAB08C" stroke="#C58A69" />
+        <path d="M190.889 389.326C180.985 385.067 185.901 376.549 190.182 368.74C196.407 357.383 203.624 348.864 206.453 346.025C210.698 339.399 234.752 331.827 260.221 338.216C300.194 348.243 311.159 382.625 311.159 390.036C311.159 401.394 309.98 412.279 306.206 417.721C293.472 422.69 279.323 417.721 267.296 414.882C255.269 412.042 211.246 398.08 190.889 389.326Z" fill="white" stroke="white" />
+      </g>
+      <g id="sleeveMotionL">
+        <path d="M167.82 396.211C164.997 404.603 25.9989 664.22 6 689.862H198C200.823 683.568 305.177 466.283 306.871 458.451C308.989 448.66 313.526 447.336 309.695 425.583C304.998 398.916 279.544 384.015 264.015 374.923L264.008 374.919C248.48 365.828 229.352 362.935 206.765 364.334C184.178 365.733 170.643 387.819 167.82 396.211Z" fill="#355A85" stroke="#355A85" id="slvL" />
+      </g>
+      <g id="handR">
+        <path d="M889.939 254.495C891.066 260.149 876.313 309.149 868.796 332.943C878.663 344.251 889.234 370.117 852.587 383.121C815.939 396.125 793.152 381.001 786.339 371.813C779.526 354.616 767.31 320.928 761.672 318.101C756.034 315.274 739.12 301.847 734.187 291.952C730.428 279.702 721.501 253.223 718.682 236.827C715.863 220.431 726.037 187.808 730.5 176.5C737 185 748.179 197.49 749.691 204.317C752.51 217.038 758.741 222.933 762.5 230C772.367 217.985 783.5 206.721 783.5 194C775.5 177.5 762.933 159.154 758 153.5C761.759 148.317 773.371 136.046 786.339 140.004C799.307 143.962 808.656 160.499 811.71 168.274C819.698 172.514 839.76 184.952 856.11 200.783C876.548 220.572 888.529 247.428 889.939 254.495Z" fill="#EAB08C" stroke="#C58A69" />
+        <path d="M901.111 389.326C911.015 385.067 906.099 376.549 901.818 368.74C895.593 357.383 888.376 348.864 885.547 346.025C881.302 339.399 857.248 331.827 831.779 338.216C791.806 348.243 780.841 382.625 780.841 390.036C780.841 401.394 782.02 412.279 785.794 417.721C798.528 422.69 812.677 417.721 824.704 414.882C836.731 412.042 880.754 398.08 901.111 389.326Z" fill="white" stroke="white" />
+      </g>
+      <g id="sleeveMotionR">
+        <path d="M925.18 396.35C928.003 404.742 1032 644.083 1042 682L868 695C863 671.167 787.823 466.421 786.129 458.589C784.011 448.799 779.474 447.475 783.305 425.721C788.002 399.055 813.456 384.153 828.985 375.062L828.992 375.058C844.52 365.967 863.648 363.074 886.235 364.473C908.822 365.871 922.357 387.958 925.18 396.35Z" fill="#355A85" stroke="#355A85" id="slvR" />
+      </g>
+    </g>
+  </g>
+  <rect x="792" y="40" width="16" height="34" rx="4" fill="#2b2f36" />
+  <path id="mRear" fill="#1b1e23" fill-rule="evenodd" />
+  <path d="M236 548 L300 566 L300 594 L230 580Z" fill="#1b1e23" />
+  <path d="M1364 548 L1300 566 L1300 594 L1370 580Z" fill="#1b1e23" />
+  <path id="mLeft" fill="#1b1e23" fill-rule="evenodd" />
+  <path id="mRight" fill="#1b1e23" fill-rule="evenodd" />
+  <path d="M198 452 L220 452 L220 566 L188 566Z" fill="#8f98a3" />
+  <path d="M1380 452 L1402 452 L1412 566 L1380 566Z" fill="#8f98a3" />
+</svg>
+
+    <canvas id="gps" width="250" height="140"></canvas>
+
+    <div class="ov hud">
+      <div class="pill"><b id="street">Jr. de la Unión</b><span class="muted" id="district">Cercado de Lima</span></div>
+      <div class="hud-r">
+        <div class="limit" id="limit" title="Límite de velocidad del tramo">30</div>
+        <div class="pill"><span class="muted">Puntaje</span><b id="score">100</b></div>
+      </div>
+    </div>
+    <div class="ov banner" id="banner" hidden><span class="dot"></span><span class="t" id="bT"></span><span class="s" id="bS"></span></div>
+    <div class="ov toasts" id="toasts"></div>
+
+
+    <div class="screen" id="startScreen">
+      <div class="card">
+        <span class="eyebrow">Misión · Cercado de Lima</span>
+        <h2>Llega al destino sin infracciones</h2>
+        <p>El GPS del tablero marca la ruta. Usa la direccional antes de cada giro, respeta los semáforos, cede el paso en los cruces peatonales y mantén la velocidad del tramo. Mira los espejos: el taxi que viene detrás y los peatones que pasas se ven en tiempo real.</p>
+        <ul class="rules">
+          <li><b>↑ / ↓</b>Acelerar y frenar (mantén pulsado)</li>
+          <li><b>← / →</b>Pon la direccional antes de la esquina: el auto dobla solo al llegar. La flecha contraria la apaga.</li>
+          <li><b>P</b>Pausa</li>
+        </ul>
+        <div><button class="btn" id="startBtn">Encender y salir</button></div>
+      </div>
+    </div>
+    <div class="screen" id="pauseScreen" hidden>
+      <div class="card"><span class="eyebrow">Pausa</span><h2>Simulación detenida</h2><div><button class="btn" id="resumeBtn">Continuar</button></div></div>
+    </div>
+    <div class="screen" id="endScreen" hidden>
+      <div class="card">
+        <span class="eyebrow">Llegaste al destino</span>
+        <div class="result"><span class="big" id="finalScore">100</span><span class="verdict ok" id="verdict">Aprobado</span><span class="muted" id="finalTime"></span></div>
+        <ul class="list" id="finalList"></ul>
+        <div><button class="btn" id="againBtn">Repetir la ruta</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls" role="group" aria-label="Controles de manejo">
+    <button class="ctl" id="bL" aria-pressed="false">◀ Direccional izq. <span class="k">←</span></button>
+    <button class="ctl brake" id="bBrake">Frenar <span class="k">↓</span></button>
+    <button class="ctl gas" id="bGas">Acelerar <span class="k">↑</span></button>
+    <button class="ctl" id="bR" aria-pressed="false">Direccional der. ▶ <span class="k">→</span></button>
+    <span class="grow"></span>
+    <button class="ctl ghost" id="bPause">Pausa <span class="k">P</span></button>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const stage=$('stage');
+
+/* ---------- utilidades ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let rng=mulberry32(20261104);
+const rr=(a,b)=>a+rng()*(b-a);
+const pick=a=>a[Math.floor(rng()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function rrPath(x,y,w,h,r){return `M${x+r} ${y}H${x+w-r}A${r} ${r} 0 0 1 ${x+w} ${y+r}V${y+h-r}A${r} ${r} 0 0 1 ${x+w-r} ${y+h}H${x+r}A${r} ${r} 0 0 1 ${x} ${y+h-r}V${y+r}A${r} ${r} 0 0 1 ${x+r} ${y}Z`;}
+
+/* ---------- mundo: constantes ---------- */
+const N=7,C=3,S=72,R0=11,LANE=3.5,HW=7;
+const DIRS=[{x:0,z:-1},{x:1,z:0},{x:0,z:1},{x:-1,z:0}];
+const RT=d=>DIRS[(d+1)%4];
+const NP=(i,j)=>({x:(i-C)*S,z:(j-C)*S});
+const inGrid=(i,j)=>i>=0&&j>=0&&i<N&&j<N;
+const nk=(i,j)=>i+'_'+j;
+const axisOf=d=>d%2;
+const COLS=['Av. Tacna','Jr. Rufino Torrico','Jr. Camaná','Jr. de la Unión','Jr. Carabaya','Jr. Lampa','Av. Abancay'];
+const ROWS=['Av. Nicolás de Piérola','Jr. Ica','Jr. Huancavelica','Jr. Ucayali','Jr. Ancash','Jr. Junín','Jr. Conde de Superunda'];
+const streetOf=(node,d)=>axisOf(d)===0?COLS[node[0]]:ROWS[node[1]];
+function segKey(a,b){return a[0]===b[0]?'V'+a[0]+'_'+Math.min(a[1],b[1]):'H'+a[1]+'_'+Math.min(a[0],b[0]);}
+const SCHOOL=new Set(['V2_2','H4_2','V4_1','H1_2']);
+function limitOf(a,b){const k=segKey(a,b);if(SCHOOL.has(k))return 20;if(k[0]==='V'&&(a[0]===0||a[0]===6))return 40;if(k[0]==='H'&&a[1]===0)return 40;return 30;}
+const SIG=new Map();
+[[3,4],[3,2],[1,4],[5,4],[1,2],[5,2],[0,1],[0,3],[0,5],[6,1],[6,3],[6,5],[2,0],[4,0],[3,0]].forEach(([i,j])=>SIG.set(nk(i,j),{i,j,off:rng()*26}));
+SIG.get(nk(3,4)).off=20;
+const CYCLE=26;
+let clock=0;
+function lightState(key,axis){const s=SIG.get(key);const t=(clock+s.off)%CYCLE;
+  if(axis===0)return t<9?'G':t<12?'A':'R';
+  return (t>=13&&t<22)?'G':(t>=22&&t<25)?'A':'R';}
+
+/* ---------- three ---------- */
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.domElement.className='gl';
+stage.insertBefore(renderer.domElement,stage.firstChild);
+const PR=Math.min(window.devicePixelRatio||1,1.75);
+renderer.setPixelRatio(PR);
+const ANISO=renderer.capabilities.getMaxAnisotropy();
+const scene=new THREE.Scene();
+const SKY=0xcfe2ec;
+scene.background=new THREE.Color(SKY);
+scene.fog=new THREE.Fog(SKY,110,330);
+scene.add(new THREE.HemisphereLight(0xffffff,0x9aa49c,0.82));
+const sun=new THREE.DirectionalLight(0xfff3df,0.6);sun.position.set(70,120,35);scene.add(sun);
+
+function canvasTex(w,h,draw,repeat){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');draw(g,w,h);const t=new THREE.CanvasTexture(c);t.anisotropy=ANISO;if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping;}return t;}
+function rRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+
+/* geometría combinada: muchas cajas en una sola malla = pocas llamadas de dibujo */
+class GB{constructor(){this.p=[];this.n=[];this.u=[];this.c=[];this.i=[];}
+  quad(a,b,c,d,nr,uv,col){const o=this.p.length/3;for(const v of[a,b,c,d]){this.p.push(v[0],v[1],v[2]);this.n.push(nr[0],nr[1],nr[2]);}
+    this.u.push(...(uv||[0,0,1,0,1,1,0,1]));if(col)for(let k=0;k<4;k++)this.c.push(col.r,col.g,col.b);this.i.push(o,o+1,o+2,o,o+2,o+3);}
+  top(x0,x1,z0,z1,y,uv,col){this.quad([x0,y,z1],[x1,y,z1],[x1,y,z0],[x0,y,z0],[0,1,0],uv,col);}
+  box(cx,y0,cz,w,h,d,cT,cS,uvf){const x0=cx-w/2,x1=cx+w/2,z0=cz-d/2,z1=cz+d/2,y1=y0+h;
+    const U=(len)=>uvf?uvf(len,h):null;
+    this.quad([x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1],[0,0,1],U(w),cS);
+    this.quad([x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0],[0,0,-1],U(w),cS);
+    this.quad([x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],[1,0,0],U(d),cS);
+    this.quad([x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0],[-1,0,0],U(d),cS);
+    if(cT!==false)this.top(x0,x1,z0,z1,y1,null,cT);}
+  build(){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(this.p,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(this.n,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(this.u,2));if(this.c.length)g.setAttribute('color',new THREE.Float32BufferAttribute(this.c,3));g.setIndex(this.i);g.computeBoundingSphere();return g;}}
+const col=h=>new THREE.Color(h);
+/* caja alineada a una dirección de calle */
+function dirBox(gb,cx,y0,cz,along,across,h,d,c){if(axisOf(d)===0)gb.box(cx,y0,cz,across,h,along,c,c);else gb.box(cx,y0,cz,along,h,across,c,c);}
+
+/* ---------- texturas ---------- */
+function arch(g,x,y,w,h){g.beginPath();g.moveTo(x,y+h);g.lineTo(x,y+w/2);g.arc(x+w/2,y+w/2,w/2,Math.PI,0);g.lineTo(x+w,y+h);g.closePath();g.fill();}
+const FACADES=[
+  {wall:'#e3aa3e',trim:'#f4e5c4',door:'#4a2e1c',base:'#c58b2d',win:'#34424f',bal:'wood'},
+  {wall:'#e9a58d',trim:'#fbefe6',door:'#5a3a2a',base:'#cf8b74',win:'#33414e',bal:'iron'},
+  {wall:'#efe1c5',trim:'#ffffff',door:'#3d4b3f',base:'#d6c4a1',win:'#34424f',bal:'wood'},
+  {wall:'#9dc3d6',trim:'#f4f7f8',door:'#2f3b4b',base:'#7fa7bb',win:'#2d3b48',bal:'iron'},
+  {wall:'#a9d1b4',trim:'#f1f7f2',door:'#4b3a2a',base:'#8bb898',win:'#2f3d48',bal:'none'},
+  {wall:'#b65d45',trim:'#eadac6',door:'#3a2a22',base:'#8f4532',win:'#2c3640',bal:'none'},
+  {wall:'#e8e5df',trim:'#cbc5ba',door:'#4a3a30',base:'#c9c3b8',win:'#34424f',bal:'wood'}
+];
+const TOWERS=[{wall:'#b6c3cb',band:'#dbe2e6',win:'#6c899f'},{wall:'#cbc3b6',band:'#e6dfd3',win:'#7c92a5'}];
+function drawFacade(g,s){
+  g.fillStyle=s.wall;g.fillRect(0,0,128,512);
+  for(let k=0;k<420;k++){g.fillStyle=`rgba(0,0,0,${Math.random()*0.05})`;g.fillRect(Math.random()*128,Math.random()*512,2,2);}
+  for(let f=0;f<4;f++){const y=512-(f+1)*128;
+    g.fillStyle=s.trim;g.fillRect(0,y,128,7);g.fillStyle='rgba(0,0,0,.09)';g.fillRect(0,y+7,128,3);
+    g.globalAlpha=.55;g.fillStyle=s.trim;g.fillRect(0,y,6,128);g.fillRect(122,y,6,128);g.globalAlpha=1;
+    if(f===0){g.fillStyle=s.base;g.fillRect(0,y+104,128,24);g.fillStyle=s.trim;arch(g,37,y+24,54,104);g.fillStyle=s.door;arch(g,43,y+30,42,98);g.fillStyle='rgba(255,255,255,.12)';g.fillRect(63,y+44,2,84);}
+    else if(s.bal==='wood'&&f===1){
+      g.fillStyle='#4b2e1e';g.fillRect(8,y+12,112,12);
+      g.fillStyle='#6b4229';g.fillRect(14,y+24,100,82);
+      g.fillStyle='#8c5c38';for(let k=0;k<4;k++)g.fillRect(19+k*24,y+30,20,40);
+      g.fillStyle='rgba(255,230,190,.18)';for(let k=0;k<4;k++)g.fillRect(21+k*24,y+32,6,20);
+      g.strokeStyle='#4b2e1e';g.lineWidth=2;for(let x=16;x<112;x+=7){g.beginPath();g.moveTo(x,y+76);g.lineTo(x+7,y+102);g.stroke();g.beginPath();g.moveTo(x+7,y+76);g.lineTo(x,y+102);g.stroke();}
+      g.fillStyle='#4b2e1e';g.fillRect(10,y+104,108,8);g.fillRect(24,y+112,8,12);g.fillRect(96,y+112,8,12);g.fillRect(60,y+112,8,10);
+    } else {
+      g.fillStyle=s.trim;g.fillRect(34,y+18,60,6);g.fillRect(38,y+24,52,80);
+      g.fillStyle=s.win;g.fillRect(44,y+30,40,68);
+      g.fillStyle='rgba(255,255,255,.2)';g.fillRect(46,y+32,14,30);
+      g.fillStyle=s.trim;g.fillRect(63,y+30,2,68);g.fillRect(44,y+58,40,2);
+      if(s.bal==='iron'){g.fillStyle='#2a2a2a';g.fillRect(28,y+84,72,3);g.fillRect(28,y+102,72,3);for(let x=30;x<100;x+=6)g.fillRect(x,y+86,2,16);g.fillStyle=s.trim;g.fillRect(26,y+105,76,6);}
+      else{g.fillStyle=s.trim;g.fillRect(34,y+104,60,5);}
+    }}
+}
+function drawTower(g,s){g.fillStyle=s.wall;g.fillRect(0,0,128,512);for(let f=0;f<4;f++){const y=f*128;g.fillStyle=s.band;g.fillRect(0,y,128,16);for(let k=0;k<4;k++){const x=6+k*30;g.fillStyle=s.win;g.fillRect(x,y+24,24,96);g.fillStyle='rgba(255,255,255,.22)';g.fillRect(x+2,y+26,8,40);}}}
+const facadeMats=FACADES.map(s=>new THREE.MeshLambertMaterial({map:canvasTex(128,512,g=>drawFacade(g,s),true)}));
+const towerMats=TOWERS.map(s=>new THREE.MeshLambertMaterial({map:canvasTex(128,512,g=>drawTower(g,s),true)}));
+
+const roadTex=canvasTex(128,256,(g)=>{g.fillStyle='#4a4f55';g.fillRect(0,0,128,256);for(let k=0;k<900;k++){const v=Math.random();g.fillStyle=v<.5?'rgba(0,0,0,.08)':'rgba(255,255,255,.05)';g.fillRect(Math.random()*128,Math.random()*256,2,2);}
+  g.fillStyle='#e9e9e4';g.fillRect(5,0,3,256);g.fillRect(120,0,3,256);g.fillStyle='#f0c23a';g.fillRect(62,0,4,128);},true);
+const zebraTex=canvasTex(128,32,(g)=>{g.clearRect(0,0,128,32);g.fillStyle='#f2f2ee';for(let k=0;k<8;k++)g.fillRect(4+k*16,0,9,32);});
+
+function pedTexture(p){return canvasTex(64,128,(g)=>{g.clearRect(0,0,64,128);
+  g.fillStyle=p.pants;g.fillRect(22,78,9,42);g.fillRect(33,78,9,42);
+  g.fillStyle='#1f2226';g.fillRect(20,118,12,7);g.fillRect(32,118,12,7);
+  g.fillStyle=p.shirt;rRect(g,18,38,28,44,7);g.fill();g.fillRect(11,42,8,30);g.fillRect(45,42,8,30);
+  g.fillStyle=p.skin;g.fillRect(11,71,8,9);g.fillRect(45,71,8,9);g.fillRect(28,30,8,10);
+  g.beginPath();g.arc(32,22,11,0,Math.PI*2);g.fill();
+  g.fillStyle=p.hair;g.beginPath();g.arc(32,19,11.6,Math.PI,0);g.fill();if(p.long){g.fillRect(20,18,6,20);g.fillRect(38,18,6,20);}
+  if(p.bag){g.fillStyle=p.bag;rRect(g,44,58,12,16,3);g.fill();}});}
+const PEDS=[
+  {shirt:'#d63a3a',pants:'#2f3c55',skin:'#e0ab83',hair:'#2a1d16',long:true},
+  {shirt:'#3a7bd5',pants:'#30343a',skin:'#c68d63',hair:'#1c1410'},
+  {shirt:'#f0f0ea',pants:'#45505e',skin:'#a8714a',hair:'#15100c',bag:'#7a5136'},
+  {shirt:'#2e8b57',pants:'#24272c',skin:'#e6b996',hair:'#4a3020',long:true},
+  {shirt:'#f2b632',pants:'#3a3f47',skin:'#bf8559',hair:'#1a1410'},
+  {shirt:'#7b4fb0',pants:'#2b2f36',skin:'#d9a27b',hair:'#2a1d16',long:true,bag:'#2b2f36'}
+].map(p=>new THREE.SpriteMaterial({map:pedTexture(p),alphaTest:.5,fog:true}));
+const treeMat=new THREE.SpriteMaterial({fog:true,alphaTest:.5,map:canvasTex(128,128,(g)=>{g.fillStyle='#7a5636';g.fillRect(58,70,12,58);
+  [[64,52,34,'#4f9a4a'],[40,64,24,'#5aa854'],[88,64,24,'#468c42'],[64,30,25,'#63b25c'],[50,40,16,'#6dbb64']].forEach(([x,y,r,c])=>{g.fillStyle=c;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill();});})});
+function signTex(n){return canvasTex(128,128,(g)=>{g.fillStyle='#ffffff';g.beginPath();g.arc(64,64,62,0,Math.PI*2);g.fill();g.strokeStyle='#d8352b';g.lineWidth=15;g.beginPath();g.arc(64,64,52,0,Math.PI*2);g.stroke();g.fillStyle='#111';g.font='bold 54px Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(String(n),64,68);});}
+const signMats={20:new THREE.MeshLambertMaterial({map:signTex(20)}),30:new THREE.MeshLambertMaterial({map:signTex(30)}),40:new THREE.MeshLambertMaterial({map:signTex(40)})};
+const pinMat=new THREE.SpriteMaterial({fog:false,depthTest:true,map:canvasTex(128,128,(g)=>{g.fillStyle='#2fbf71';g.beginPath();g.arc(64,56,48,0,Math.PI*2);g.fill();g.beginPath();g.moveTo(40,90);g.lineTo(88,90);g.lineTo(64,126);g.fill();g.strokeStyle='#fff';g.lineWidth=6;g.beginPath();g.arc(64,56,40,0,Math.PI*2);g.stroke();g.fillStyle='#fff';g.font='bold 30px Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('META',64,58);})});
+
+/* ---------- construir la ciudad ---------- */
+function buildWorld(){
+  const fGB=FACADES.map(()=>new GB()),tGB=TOWERS.map(()=>new GB()),roof=new GB(),slab=new GB();
+  const roofC=[col('#b9b1a3'),col('#a9a297'),col('#c4bcb0')];
+  const uvB=(len,h)=>[0,0,len/4,0,len/4,h/14,0,h/14];
+  function building(gbs,cx,cz,w,d,h){gbs.box(cx,0,cz,w,h,d,false,null,uvB);roof.top(cx-w/2,cx+w/2,cz-d/2,cz+d/2,h,null,pick(roofC));}
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(1600,1600),new THREE.MeshLambertMaterial({color:0xc9cfc7}));
+  ground.rotation.x=-Math.PI/2;ground.position.y=-0.06;scene.add(ground);
+  const sTop=col('#d9d6cc'),sSide=col('#aaa69b');
+  for(let bi=-2;bi<=7;bi++)for(let bj=-2;bj<=7;bj++){
+    const cx=(bi-C+0.5)*S,cz=(bj-C+0.5)*S;
+    const outer=bi<0||bj<0||bi>5||bj>5;
+    slab.box(cx,0,cz,S-2*HW,0.15,S-2*HW,sTop,sSide);
+    const I=25;
+    // frentes norte y sur
+    for(const side of[-1,1]){let x=-I;while(x<I-3){let w=rr(7,14);if(I-x-w<6)w=I-x;const fl=Math.floor(rr(2,4.99));building(fGB[Math.floor(rng()*FACADES.length)],cx+x+w/2,cz+side*(I-6),w,12,fl*3.5);x+=w;}}
+    for(const side of[-1,1]){let z=-13;while(z<13-2){let w=rr(7,13);if(13-z-w<6)w=13-z;const fl=Math.floor(rr(2,4.99));building(fGB[Math.floor(rng()*FACADES.length)],cx+side*(I-6),cz+z+w/2,12,w,fl*3.5);z+=w;}}
+    if(outer?rng()<.75:rng()<.22){const w=rr(14,22),h=outer?rr(28,58):rr(22,40);const g=tGB[Math.floor(rng()*TOWERS.length)];g.box(cx,0,cz,w,h,w,false,null,uvB);roof.top(cx-w/2,cx+w/2,cz-w/2,cz+w/2,h,null,roofC[1]);}
+  }
+  fGB.forEach((g,k)=>scene.add(new THREE.Mesh(g.build(),facadeMats[k])));
+  tGB.forEach((g,k)=>scene.add(new THREE.Mesh(g.build(),towerMats[k])));
+  scene.add(new THREE.Mesh(roof.build(),new THREE.MeshLambertMaterial({vertexColors:true})));
+  scene.add(new THREE.Mesh(slab.build(),new THREE.MeshLambertMaterial({vertexColors:true})));
+
+  // calles
+  const roads=new GB(),inter=new GB(),zebra=new GB(),stops=new GB(),EXT=5*S;
+  for(let i=-2;i<=8;i++){const x=(i-C)*S;const L=2*EXT/12;
+    roads.quad([x-HW,0.02,EXT],[x+HW,0.02,EXT],[x+HW,0.02,-EXT],[x-HW,0.02,-EXT],[0,1,0],[0,0,1,0,1,L,0,L]);
+    const z=(i-C)*S;
+    roads.quad([-EXT,0.021,z+HW],[EXT,0.021,z+HW],[EXT,0.021,z-HW],[-EXT,0.021,z-HW],[0,1,0],[1,0,1,L,0,L,0,0]);}
+  for(let i=-2;i<=8;i++)for(let j=-2;j<=8;j++){const x=(i-C)*S,z=(j-C)*S;inter.top(x-HW,x+HW,z-HW,z+HW,0.03);}
+  const white=col('#f2f2ee');
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){const p=NP(i,j);
+    for(let d=0;d<4;d++){const D=DIRS[d],R=RT(d);
+      const a1=-7.6,a2=-11.6; // detrás del cruce, en la dirección de llegada
+      const xs=[p.x+D.x*a1,p.x+D.x*a2],zs=[p.z+D.z*a1,p.z+D.z*a2];
+      if(axisOf(d)===0)zebra.top(p.x-HW,p.x+HW,Math.min(...zs),Math.max(...zs),0.035,[0,0,1,0,1,1,0,1]);
+      else zebra.top(Math.min(...xs),Math.max(...xs),p.z-HW,p.z+HW,0.035,[1,0,1,1,0,1,0,0]);
+      // línea de pare (solo carril derecho)
+      const c1={x:p.x-D.x*12.6,z:p.z-D.z*12.6},c2={x:p.x-D.x*13.1+R.x*HW,z:p.z-D.z*13.1+R.z*HW};
+      stops.top(Math.min(c1.x,c2.x),Math.max(c1.x,c2.x)+(axisOf(d)===1?0:0),Math.min(c1.z,c2.z),Math.max(c1.z,c2.z),0.036,null,white);
+    }}
+  const roadMat=new THREE.MeshLambertMaterial({map:roadTex});
+  scene.add(new THREE.Mesh(roads.build(),roadMat));
+  scene.add(new THREE.Mesh(inter.build(),new THREE.MeshLambertMaterial({color:0x4a4f55,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1})));
+  scene.add(new THREE.Mesh(zebra.build(),new THREE.MeshLambertMaterial({map:zebraTex,transparent:true,alphaTest:.5,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})));
+  scene.add(new THREE.Mesh(stops.build(),new THREE.MeshLambertMaterial({vertexColors:true,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})));
+
+  // semáforos: postes combinados + luces por (cruce, eje, color)
+  const poles=new GB(),pc=col('#2e3740'),hc=col('#1d2329');
+  SIG.forEach((s,key)=>{const p=NP(s.i,s.j);s.lamps=[[null,null,null],[null,null,null]];
+    const lampGB=[[new GB(),new GB(),new GB()],[new GB(),new GB(),new GB()]];
+    for(let d=0;d<4;d++){const D=DIRS[d],R=RT(d),ax=axisOf(d);
+      const bx=p.x-D.x*12.8,bz=p.z-D.z*12.8;
+      const pole={x:bx+R.x*8.6,z:bz+R.z*8.6};
+      poles.box(pole.x,0,pole.z,0.26,6.1,0.26,pc,pc);
+      const arm={x:bx+R.x*5.3,z:bz+R.z*5.3};
+      dirBox(poles,arm.x,5.85,arm.z,0.18,6.6,0.18,d,pc);
+      const hs=[{x:bx+R.x*3.5,z:bz+R.z*3.5,y:4.35},{x:pole.x-D.x*0.32,z:pole.z-D.z*0.32,y:2.3}];
+      for(const h of hs){dirBox(poles,h.x,h.y,h.z,0.42,0.56,1.55,d,hc);
+        for(let c=0;c<3;c++){const ly=h.y+1.55-0.32-c*0.46-0.15;dirBox(lampGB[ax][c],h.x-D.x*0.23,ly,h.z-D.z*0.23,0.06,0.32,0.3,d,null);}}
+    }
+    for(let ax=0;ax<2;ax++)for(let c=0;c<3;c++){const m=new THREE.Mesh(lampGB[ax][c].build(),LAMP_DIM[c]);scene.add(m);s.lamps[ax][c]=m;}
+  });
+  // señales de velocidad
+  const circle=new THREE.CircleGeometry(0.55,28);
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++)for(let d=0;d<4;d++){const b=[i+DIRS[d].x,j+DIRS[d].z];if(!inGrid(b[0],b[1]))continue;
+    const lim=limitOf([i,j],b);if(lim===30&&rng()>.35)continue;
+    const p=NP(i,j),D=DIRS[d],R=RT(d);const x=p.x+D.x*17+R.x*8.7,z=p.z+D.z*17+R.z*8.7;
+    poles.box(x,0,z,0.1,2.5,0.1,pc,pc);
+    const m=new THREE.Mesh(circle,signMats[lim]);m.position.set(x-D.x*0.07,2.55,z-D.z*0.07);m.rotation.y=Math.atan2(-D.x,-D.z);scene.add(m);}
+  scene.add(new THREE.Mesh(poles.build(),new THREE.MeshLambertMaterial({vertexColors:true})));
+
+  // árboles
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++)for(const d of[1,2]){const b=[i+DIRS[d].x,j+DIRS[d].z];if(!inGrid(b[0],b[1]))continue;
+    for(const side of[-1,1]){if(rng()>.5)continue;const p=NP(i,j),D=DIRS[d],R=RT(d);const t=rr(18,S-18);
+      const sp=new THREE.Sprite(treeMat);sp.center.set(.5,0);sp.scale.set(4.6,4.6,1);sp.position.set(p.x+D.x*t+R.x*side*9.8,0.15,p.z+D.z*t+R.z*side*9.8);scene.add(sp);}}
+}
+const LAMP_ON=[new THREE.MeshBasicMaterial({color:0xff3b30}),new THREE.MeshBasicMaterial({color:0xffb21e}),new THREE.MeshBasicMaterial({color:0x2ee87a})];
+const LAMP_DIM=[new THREE.MeshLambertMaterial({color:0x3b2222}),new THREE.MeshLambertMaterial({color:0x3b3322}),new THREE.MeshLambertMaterial({color:0x1f3a29})];
+buildWorld();
+
+/* ---------- autos ---------- */
+const carGeoCache={};
+function carGeo(hex,taxi){const key=hex+(taxi?'t':'');if(carGeoCache[key])return carGeoCache[key];
+  const gb=new GB(),body=col(hex),side=col(hex).multiplyScalar(.82),dark=col('#1c1f24'),glass=col('#2c3a48'),tail=col('#d22f2f'),head=col('#fff2c4');
+  gb.box(0,0.32,0,1.8,0.78,4.2,body,side);
+  gb.box(0,1.1,0.25,1.62,0.62,2.2,glass,glass);
+  gb.box(0,1.72,0.25,1.52,0.08,2.0,body,body);
+  for(const sx of[-1,1])for(const sz of[-1,1])gb.box(sx*0.82,0,sz*1.35,0.3,0.66,0.7,dark,dark);
+  for(const sx of[-1,1]){gb.box(sx*0.6,0.82,2.1,0.46,0.16,0.04,tail,tail);gb.box(sx*0.6,0.78,-2.12,0.46,0.16,0.04,head,head);}
+  gb.box(0,0.28,2.12,1.82,0.2,0.06,dark,dark);gb.box(0,0.28,-2.12,1.82,0.2,0.06,dark,dark);
+  if(taxi)gb.box(0,1.8,0.25,0.7,0.22,0.3,col('#f6f6f2'),col('#222'));
+  return carGeoCache[key]=gb.build();}
+const carMat=new THREE.MeshLambertMaterial({vertexColors:true});
+const CAR_COLORS=['#eceff1','#c73a32','#2f5d9c','#a7b0b8','#2f5b4b','#2a2d33','#f2c230'];
+function makeCar(hex,taxi){const m=new THREE.Mesh(carGeo(hex,taxi),carMat);scene.add(m);return m;}
+
+/* autos estacionados */
+for(let k=0;k<26;k++){const i=Math.floor(rng()*N),j=Math.floor(rng()*N),d=Math.floor(rng()*4);const b=[i+DIRS[d].x,j+DIRS[d].z];if(!inGrid(b[0],b[1]))continue;
+  const p=NP(i,j),D=DIRS[d],R=RT(d);const t=rr(22,S-22);const m=makeCar(pick(CAR_COLORS));
+  m.position.set(p.x+D.x*t+R.x*5.9,0,p.z+D.z*t+R.z*5.9);m.rotation.y=Math.atan2(-D.x,-D.z);}
+
+/* ---------- ruta del jugador (tramos rectos + curvas) ---------- */
+const lane=d=>({x:RT(d).x*LANE,z:RT(d).z*LANE});
+function lineP(a,b,meta){const dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);return{type:'L',a,b,len,tx:dx/len,tz:dz/len,meta};}
+function bez(p0,p1,p2,t){const u=1-t;return{x:u*u*p0.x+2*u*t*p1.x+t*t*p2.x,z:u*u*p0.z+2*u*t*p1.z+t*t*p2.z};}
+function curveP(p0,p1,p2,meta){const lut=[0];let prev=p0,L=0;for(let k=1;k<=24;k++){const q=bez(p0,p1,p2,k/24);L+=Math.hypot(q.x-prev.x,q.z-prev.z);lut.push(L);prev=q;}return{type:'C',p0,p1,p2,len:L,lut,meta};}
+function makeSeg(A,d){const B=[A[0]+DIRS[d].x,A[1]+DIRS[d].z],pa=NP(...A),pb=NP(...B),o=lane(d),D=DIRS[d];
+  return lineP({x:pa.x+D.x*R0+o.x,z:pa.z+D.z*R0+o.z},{x:pb.x-D.x*R0+o.x,z:pb.z-D.z*R0+o.z},{kind:'seg',A,B,d,limit:limitOf(A,B),signal:SIG.has(nk(...B)),ev:{}});}
+function makeJn(B,d,nd,turn){const p=NP(...B),D=DIRS[d],ND=DIRS[nd],o=lane(d),o2=lane(nd);
+  const meta={kind:'jn',B,d,nd,turn,ev:{}};
+  if(nd===d)return lineP({x:p.x-D.x*R0+o.x,z:p.z-D.z*R0+o.z},{x:p.x+D.x*R0+o.x,z:p.z+D.z*R0+o.z},meta);
+  return curveP({x:p.x-D.x*R0+o.x,z:p.z-D.z*R0+o.z},{x:p.x+o.x+o2.x,z:p.z+o.z+o2.z},{x:p.x+ND.x*R0+o2.x,z:p.z+ND.z*R0+o2.z},meta);}
+const path={pieces:[]};
+function addPiece(pc){const l=path.pieces[path.pieces.length-1];pc.s0=l?l.s0+l.len:0;path.pieces.push(pc);}
+function pieceAt(s){const P=path.pieces;for(let k=P.length-1;k>=0;k--)if(s>=P[k].s0)return P[k];return P[0];}
+function sampleAt(s){const pc=pieceAt(s);const l=clamp(s-pc.s0,0,pc.len);
+  if(pc.type==='L')return{x:pc.a.x+pc.tx*l,z:pc.a.z+pc.tz*l,tx:pc.tx,tz:pc.tz,pc};
+  const lut=pc.lut;let k=1;while(k<24&&lut[k]<l)k++;const f=(l-lut[k-1])/((lut[k]-lut[k-1])||1);const t=(k-1+f)/24;
+  const q=bez(pc.p0,pc.p1,pc.p2,t),u=1-t;let tx=2*u*(pc.p1.x-pc.p0.x)+2*t*(pc.p2.x-pc.p1.x),tz=2*u*(pc.p1.z-pc.p0.z)+2*t*(pc.p2.z-pc.p1.z);const n=Math.hypot(tx,tz)||1;
+  return{x:q.x,z:q.z,tx:tx/n,tz:tz/n,pc};}
+
+/* ---------- GPS: búsqueda en anchura sobre (cruce, dirección) ---------- */
+let dest=[1,1];
+function route(B,d){if(B[0]===dest[0]&&B[1]===dest[1])return{turn:null,nodes:[B]};
+  const key=(i,j,dd)=>i+','+j+','+dd;const start=key(B[0],B[1],d);const prev=new Map([[start,null]]);const q=[[B[0],B[1],d]];
+  while(q.length){const [i,j,dd]=q.shift();if(i===dest[0]&&j===dest[1]){let k=key(i,j,dd);const nodes=[];let first=null;
+      while(prev.get(k)){const e=prev.get(k);nodes.unshift(e.node);first=e.turn;k=e.from;}nodes.push([i,j]);return{turn:first,nodes};}
+    for(const [t,nd] of [['S',dd],['R',(dd+1)%4],['L',(dd+3)%4]]){const ni=i+DIRS[nd].x,nj=j+DIRS[nd].z;if(!inGrid(ni,nj))continue;const k=key(ni,nj,nd);if(prev.has(k))continue;prev.set(k,{from:key(i,j,dd),turn:t,node:[i,j]});q.push([ni,nj,nd]);}}
+  return{turn:'S',nodes:[B]};}
+
+/* ---------- peatones ---------- */
+const walkers=[];
+for(let k=0;k<46;k++){const i=Math.floor(rng()*N),j=Math.floor(rng()*N),d=pick([1,2]);const b=[i+DIRS[d].x,j+DIRS[d].z];if(!inGrid(b[0],b[1]))continue;
+  const p=NP(i,j),D=DIRS[d],R=RT(d),side=rng()<.5?-1:1;const sp=new THREE.Sprite(pick(PEDS));sp.center.set(.5,0);sp.scale.set(.9,1.8,1);scene.add(sp);
+  walkers.push({sp,base:{x:p.x+D.x*S/2+R.x*side*9.3,z:p.z+D.z*S/2+R.z*side*9.3},D,t:rr(-22,22),v:rr(1,1.5)*(rng()<.5?-1:1),ph:rng()*6});}
+let crossers=[];
+function spawnCrosser(B,d){const sp=new THREE.Sprite(PEDS[0]);sp.center.set(.5,0);sp.scale.set(.9,1.8,1);scene.add(sp);
+  const c={sp,B,d,lat:10.2,state:'wait',t:0,ph:0};crossers.push(c);return c;}
+
+/* ---------- tráfico ---------- */
+const ai=[];
+function spawnAI(){for(let k=0;k<12;k++){const ax=k%2,line=Math.floor(rng()*N),d=ax===0?pick([0,2]):pick([1,3]);
+  let u=rr(-300,300);const car={ax,line,d,u,v:rr(6,9),m:makeCar(pick(CAR_COLORS),rng()<.3)};
+  if(ax===0&&line===3&&d===0&&u>60&&u<260)car.u=-200; ai.push(car);}}
+spawnAI();
+function aiPos(c){const D=DIRS[c.d],R=RT(c.d);if(c.ax===0){const x=(c.line-C)*S;return{x:x+R.x*LANE,z:c.u};}const z=(c.line-C)*S;return{x:c.u,z:z+R.z*LANE};}
+
+/* ---------- estado ---------- */
+const st={running:false,paused:false,s:0,v:0,sF:0,vF:0,steer:0,queued:null,score:100,good:0,log:{},time:0,overT:0,cool:0,collCool:0,gps:null,seg:null,ended:false};
+const keys={gas:false,brake:false};
+let follower=makeCar('#f2c230',true);
+let pin=new THREE.Sprite(pinMat);pin.scale.set(5,5,1);pin.center.set(.5,0);scene.add(pin);
+const beam=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,9,12,1,true),new THREE.MeshBasicMaterial({color:0x2fbf71,transparent:true,opacity:.35,depthWrite:false}));scene.add(beam);
+
+function reset(){
+  path.pieces.length=0;rng=mulberry32(Date.now()%100000);
+  const start=[3,6];addPiece(makeJn(start,0,0,'S'));path.pieces[0].meta.init=true;addPiece(makeSeg(start,0));
+  path.pieces[1].meta.forcePed=true;
+  st.s=30;st.sF=8;st.v=0;st.vF=0;st.steer=0;st.queued=null;st.score=100;st.good=0;st.log={};st.time=0;st.overT=0;st.cool=0;st.collCool=3;st.ended=false;st.blinkTurn=null;
+  dest=pick([[1,1],[5,1],[2,1],[4,1],[1,2],[5,2]]);
+  const dp=NP(...dest);pin.position.set(dp.x,7,dp.z);beam.position.set(dp.x,4.5,dp.z);
+  crossers.forEach(c=>scene.remove(c.sp));crossers=[];
+  st.seg=path.pieces[1];st.gps=route(st.seg.meta.B,st.seg.meta.d);
+  setQueued(null);updateScore();
+  const F=sampleAt(st.sF);follower.position.set(F.x,0,F.z);follower.rotation.y=Math.atan2(-F.tx,-F.tz);
+  for(const c of ai){const np=aiPos(c);c.m.position.set(np.x,0,np.z);c.m.rotation.y=Math.atan2(-DIRS[c.d].x,-DIRS[c.d].z);}
+  for(const w of walkers)w.sp.position.set(w.base.x+w.D.x*w.t,0.15,w.base.z+w.D.z*w.t);
+}
+
+/* ---------- reglas y puntaje ---------- */
+function addLog(label,pts){if(!st.log[label])st.log[label]={n:0,pts:0};st.log[label].n++;st.log[label].pts+=pts;}
+function penalty(label,pts,detail){st.score=Math.max(0,st.score-pts);addLog(label,-pts);toast(detail||label,'bad','−'+pts);updateScore();}
+function goodAct(label){st.good++;addLog(label,0);toast(label,'good','✓');}
+function updateScore(){$('score').textContent=st.score;}
+function toast(text,kind,pts){const box=$('toasts');const el=document.createElement('div');el.className='toast '+kind;el.innerHTML=`<span class="pts"></span><span></span>`;el.firstChild.textContent=pts;el.lastChild.textContent=text;box.appendChild(el);while(box.children.length>3)box.firstChild.remove();setTimeout(()=>el.remove(),3400);}
+let bannerKey='';
+function setBanner(k,t,s){const key=k+t+s;if(key===bannerKey)return;bannerKey=key;const b=$('banner');if(!k){b.hidden=true;return;}b.hidden=false;b.dataset.k=k;$('bT').textContent=t;$('bS').textContent=s||'';}
+
+function setQueued(q){st.queued=q;$('bL').setAttribute('aria-pressed',q==='L');$('bR').setAttribute('aria-pressed',q==='R');}
+function toggleTurn(q){if(!st.running||st.paused)return;
+  if(st.queued&&st.queued!==q){setQueued(null);toast('Direccional apagada: seguirás recto','info','·');return;}
+  if(st.queued===q)return;
+  setQueued(q);toast(`Girarás a la ${q==='R'?'derecha':'izquierda'} en la próxima esquina`,'info',q==='R'?'→':'←');}
+
+function chooseNext(B,d){const opts={S:d,R:(d+1)%4,L:(d+3)%4};const ok=k=>inGrid(B[0]+DIRS[opts[k]].x,B[1]+DIRS[opts[k]].z);
+  if(st.queued&&ok(st.queued))return st.queued;if(ok('S'))return 'S';const g=route(B,d).turn;if(g&&ok(g))return g;return ok('R')?'R':'L';}
+function ensurePath(){const P=path.pieces;const last=P[P.length-1];
+  if(last.meta.kind==='seg'&&st.s>last.s0+last.len-1){const {B,d}=last.meta;const t=chooseNext(B,d);
+    if(t!=='S'){st.blinkTurn=t;if(st.queued===t)setQueued(null);}const nd=t==='S'?d:t==='R'?(d+1)%4:(d+3)%4;
+    addPiece(makeJn(B,d,nd,t));addPiece(makeSeg(B,nd));}
+  while(P.length>3&&P[0].s0+P[0].len<st.sF-6)P.shift();}
+
+function rules(dt,pc,prevS){
+  const m=pc.meta,kmh=st.v*3.6;let banner=null,obj=m.kind==='seg'?m.limit:20;
+  if(m.kind==='seg'){
+    if(st.seg!==pc){st.seg=pc;st.gps=route(m.B,m.d);st.blinkTurn=null;}
+    const dist=pc.s0+pc.len-st.s+R0,prevDist=pc.s0+pc.len-prevS+R0,key=nk(...m.B);
+    // semáforo
+    if(m.signal){const ls=lightState(key,axisOf(m.d));
+      if(ls!=='G'&&dist<75&&dist>11){banner=ls==='R'?['red','Semáforo rojo',Math.round(dist-12)+' m · detente antes de la línea']:['amber','Luz ámbar',Math.round(dist-12)+' m · prepárate para frenar'];
+        if(ls==='R'||dist>24)obj=0;}
+      if(prevDist>12.6&&dist<=12.6){if(ls==='R')penalty('Semáforo en rojo',20,'Pasaste el semáforo en rojo');else if(ls==='A')toast('Cruzaste en ámbar: hazlo solo si ya no puedes frenar','info','!');}
+      if(ls==='R'&&st.v<0.3&&dist<40&&!m.ev.stopped){m.ev.stopped=true;goodAct('Te detuviste ante el rojo');}
+    } else {
+      // peatón que cruza
+      if(!m.ev.pedChecked&&dist<64){m.ev.pedChecked=true;if(m.forcePed||rng()<.5)m.ped=spawnCrosser(m.B,m.d);}
+      const ped=m.ped;
+      if(ped&&ped.lat>-7.6&&ped.lat<10.5&&dist>9){banner=['red','Peatón cruzando',Math.round(Math.max(0,dist-12))+' m · cede el paso'];obj=0;
+        if(st.v<0.4&&dist<50&&!m.ev.yielded){m.ev.yielded=true;goodAct('Cediste el paso al peatón');}}
+      else if(!ped&&dist<46&&dist>24&&!banner)banner=['info','Paso peatonal próximo',Math.round(dist-12)+' m'];
+      if(prevDist>11.8&&dist<=11.8&&ped&&ped.lat>-0.6&&ped.lat<7.6)penalty('No cedió el paso al peatón',15,'No cediste el paso al peatón');
+    }
+    if(st.queued&&dist<34&&obj>20){obj=20;if(!banner)banner=['info',st.queued==='R'?'Giro a la derecha':'Giro a la izquierda','Reduce a 20 km/h antes de doblar'];}
+    else if(st.queued&&!banner)banner=['info',st.queued==='R'?'Direccional derecha':'Direccional izquierda','Doblarás en la próxima esquina · '+Math.round(Math.max(0,dist-12))+' m'];
+    if(m.limit===20&&!banner)banner=['amber','Zona escolar','Máximo 20 km/h'];
+  } else if(m.kind==='jn'&&!m.init){
+    if(m.B[0]===dest[0]&&m.B[1]===dest[1]&&!st.ended){finish();return;}
+    if(m.turn!=='S'&&kmh>27&&!m.ev.fast){m.ev.fast=true;penalty('Giro demasiado rápido',5,'Giro demasiado rápido: reduce antes de doblar');}
+  }
+  // exceso de velocidad
+  const lim=m.kind==='seg'?m.limit:30;
+  if(kmh>lim+4){st.overT+=dt;if(!banner)banner=['red','Reduce la velocidad','Límite del tramo: '+lim+' km/h'];if(st.overT>1.4&&st.cool<=0){penalty('Exceso de velocidad',5,'Superaste el límite de este tramo');st.cool=6;}}
+  else st.overT=Math.max(0,st.overT-dt);
+  st.cool-=dt;st.obj=obj;
+  if(banner)setBanner(...banner);else setBanner(null);
+}
+
+/* ---------- cámaras ---------- */
+const camMain=new THREE.PerspectiveCamera(58,16/9,0.1,700);camMain.rotation.order='YXZ';
+// rectángulos del vidrio de cada espejo en coordenadas del SVG (1600 x 900)
+const MIRRORS=[
+  {id:'mRear',glass:[642,78,316,72],outer:[630,66,340,96],r:[24,34],fov:17,yawOff:0,side:0,h:1.38},
+  {id:'mLeft',glass:[40,452,180,114],outer:[24,436,212,146],r:[20,30],fov:30,yawOff:-0.13,side:-1,h:1.1},
+  {id:'mRight',glass:[1380,452,180,114],outer:[1364,436,212,146],r:[20,30],fov:30,yawOff:0.13,side:1,h:1.1}
+];
+const ovScene=new THREE.Scene(),ovCam=new THREE.OrthographicCamera(0,1,1,0,-10,10);
+MIRRORS.forEach(M=>{const [x,y,w,h]=M.glass,[ox,oy,ow,oh]=M.outer;$(M.id).setAttribute('d',rrPath(ox,oy,ow,oh,M.r[1])+rrPath(x,y,w,h,M.r[0]));
+  M.cam=new THREE.PerspectiveCamera(M.fov,w/h,0.1,500);M.cam.rotation.order='YXZ';
+  M.rt=new THREE.WebGLRenderTarget(256,64);
+  M.rt.texture.repeat.set(-1,1);M.rt.texture.offset.set(1,0); // volteo horizontal: así funciona un espejo
+  M.quad=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:M.rt.texture,depthTest:false,depthWrite:false}));ovScene.add(M.quad);});
+
+let W=0,H=0;
+function resize(){W=stage.clientWidth;H=stage.clientHeight;if(!W||!H)return;renderer.setSize(W,H,false);camMain.aspect=W/H;camMain.updateProjectionMatrix();
+  const k=W/1600;ovCam.left=0;ovCam.right=W;ovCam.top=H;ovCam.bottom=0;ovCam.updateProjectionMatrix();
+  MIRRORS.forEach(M=>{const [x,y,w,h]=M.glass;const pw=w*k,ph=h*k;M.rt.setSize(Math.max(2,Math.round(pw*PR)),Math.max(2,Math.round(ph*PR)));M.cam.aspect=w/h;M.cam.updateProjectionMatrix();
+    M.quad.scale.set(pw,ph,1);M.quad.position.set((x+w/2)*k,H-(y+h/2)*k,0);});
+  sizeGps();}
+new ResizeObserver(resize).observe(stage);
+
+/* ---------- tablero ---------- */
+// Coordenadas locales del SVG V2; dashboardV2 lo sitúa a y=425 en la cabina.
+const WC={x:545.5,y:312.5};
+function parseSleevePath(d){
+  const tokens=d.match(/[MLCHVZ]|[-+]?(?:\d*\.)?\d+(?:e[-+]?\d+)?/gi),segments=[];
+  let i=0,x=0,y=0;
+  while(i<tokens.length){
+    const command=tokens[i++].toUpperCase();
+    if(command==='Z'){segments.push({command,points:[]});continue;}
+    const count={M:2,L:2,C:6,H:1,V:1}[command];
+    if(!count)throw new Error('Comando de manga no admitido: '+command);
+    const points=tokens.slice(i,i+count).map(Number);i+=count;
+    if(command==='H'){x=points[0];segments.push({command:'L',points:[x,y]});}
+    else if(command==='V'){y=points[0];segments.push({command:'L',points:[x,y]});}
+    else{x=points[points.length-2];y=points[points.length-1];segments.push({command,points});}
+  }
+  return segments;
+}
+const sleeves=['L','R'].map(side=>{
+  const el=$('slv'+side),original=el.getAttribute('d');
+  return{el,motion:$('sleeveMotion'+side),original,segments:parseSleevePath(original)};
+});
+function updateDriverPose(deg){
+  // Manos, puños y volante reciben la MISMA transformación: se conserva el encaje del aro.
+  $('driverRig').setAttribute('transform',`rotate(${deg.toFixed(4)} ${WC.x} ${WC.y})`);
+  const a=deg*Math.PI/180,c=Math.cos(a),s=Math.sin(a);
+  for(const sleeve of sleeves){
+    // Solo la parte baja de la tela se deforma; los extremos permanecen bajo la pantalla.
+    sleeve.motion.setAttribute('transform',`rotate(${(-deg).toFixed(4)} ${WC.x} ${WC.y})`);
+    if(Math.abs(deg)<1e-6){sleeve.el.setAttribute('d',sleeve.original);continue;}
+    const d=sleeve.segments.map(({command,points})=>{
+      const values=[];
+      for(let i=0;i<points.length;i+=2){
+        const x=points[i],y=points[i+1],dx=x-WC.x,dy=y-WC.y;
+        const weight=1-clamp((y-460)/190,0,1);
+        values.push((x+(WC.x+dx*c-dy*s-x)*weight).toFixed(3),(y+(WC.y+dx*s+dy*c-y)*weight).toFixed(3));
+      }
+      return command+values.join(' ');
+    }).join(' ');
+    sleeve.el.setAttribute('d',d);
+  }
+}
+updateDriverPose(0);
+let lastDash=0,blinkT=0;
+function updateDash(dt){
+  const kmh=st.v*3.6,deg=st.steer*80;
+  updateDriverPose(deg);
+  const aS=-210+clamp(kmh/120,0,1)*240,aR=-210+clamp((900+kmh*55+(keys.gas?600:0))/7000,0,1)*240;
+  $('ndlSpd').setAttribute('transform',`rotate(${aS+210} 663.3 200.037)`);$('ndlRpm').setAttribute('transform',`rotate(${aR+179.14} 427.606 200.037)`);
+  blinkT+=dt;const on=Math.floor(blinkT*2.4)%2===0;
+  const bl=st.queued||st.blinkTurn;
+  $('blkL').setAttribute('fill',bl==='L'&&on?'#3ef08a':'#1c4a32');$('blkR').setAttribute('fill',bl==='R'&&on?'#3ef08a':'#1c4a32');
+  lastDash+=dt;if(lastDash<0.1)return;lastDash=0;
+  $('spdTxt').textContent=Math.round(kmh);$('objTxt').textContent='km/h · OBJ '+(st.obj??30);
+  $('stTxt').textContent=keys.brake&&st.v>0.2?'FRENANDO':keys.gas?'ACELERANDO':st.v<0.2?'DETENIDO':'MARCHA ESTABLE';
+  const pc=pieceAt(st.s),m=pc.meta;
+  if(m.kind==='seg'){$('street').textContent=streetOf(m.A,m.d);$('limit').textContent=m.limit;}
+  else $('street').textContent=streetOf(m.B,m.nd)+' / '+streetOf(m.B,m.d);
+  drawGps();
+}
+
+/* GPS en la pantalla central */
+const gpsC=$('gps'),gx=gpsC.getContext('2d');
+function sizeGps(){const r=gpsC.getBoundingClientRect();gpsC.width=Math.max(50,Math.round(r.width*PR));gpsC.height=Math.max(30,Math.round(r.height*PR));}
+function drawGps(){const w=gpsC.width,h=gpsC.height;if(!w)return;const g=gx;g.setTransform(1,0,0,1,0,0);
+  g.fillStyle='#0d1a24';g.fillRect(0,0,w,h);const bar=h*0.3;
+  const pc=st.seg,m=pc.meta,dist=Math.max(0,pc.s0+pc.len-st.s+R0-12);const r=st.gps;
+  let arrow='↑',text='Sigue recto',sub=streetOf(m.B,m.d);
+  if(!r||r.turn===null){arrow='⚑';text='Destino';sub='a '+Math.round(dist)+' m';}
+  else{const nd=r.turn==='S'?m.d:r.turn==='R'?(m.d+1)%4:(m.d+3)%4;sub=streetOf(m.B,nd);if(r.turn==='R'){arrow='↱';text='Gira a la derecha';}else if(r.turn==='L'){arrow='↰';text='Gira a la izquierda';}}
+  g.fillStyle='#14324a';g.fillRect(0,0,w,bar);g.fillStyle='#ffffff';g.textBaseline='middle';
+  g.font=`700 ${bar*0.7}px Arial, sans-serif`;g.fillText(arrow,w*0.04,bar*0.52);
+  g.font=`700 ${bar*0.36}px Arial, sans-serif`;g.fillText((r&&r.turn!==null?Math.round(dist)+' m · ':'')+text,w*0.17,bar*0.34);
+  g.fillStyle='#9fc4e2';g.font=`${bar*0.3}px Arial, sans-serif`;g.fillText(sub,w*0.17,bar*0.72);
+  // mapa
+  const pad=h*0.08,mh=h-bar-pad*2,cell=Math.min((w-pad*2)/(N-1),mh/(N-1)),ox=(w-cell*(N-1))/2,oy=bar+pad;
+  const X=x=>ox+(x/S+C)*cell,Y=z=>oy+(z/S+C)*cell;
+  g.strokeStyle='#26404f';g.lineWidth=Math.max(1,cell*0.18);
+  for(let i=0;i<N;i++){g.beginPath();g.moveTo(ox+i*cell,oy);g.lineTo(ox+i*cell,oy+cell*(N-1));g.stroke();g.beginPath();g.moveTo(ox,oy+i*cell);g.lineTo(ox+cell*(N-1),oy+i*cell);g.stroke();}
+  if(r){const p=sampleAt(st.s);g.strokeStyle='#4aa3ff';g.lineWidth=Math.max(2,cell*0.22);g.lineJoin='round';g.beginPath();g.moveTo(X(p.x),Y(p.z));r.nodes.forEach(n=>{const q=NP(...n);g.lineTo(X(q.x),Y(q.z));});g.stroke();}
+  const dp=NP(...dest);g.fillStyle='#2fbf71';g.beginPath();g.arc(X(dp.x),Y(dp.z),cell*0.32,0,Math.PI*2);g.fill();
+  const p=sampleAt(st.s),a=Math.atan2(p.tz,p.tx);g.save();g.translate(X(p.x),Y(p.z));g.rotate(a);g.fillStyle='#ffffff';g.beginPath();const s=cell*0.38;g.moveTo(s,0);g.lineTo(-s*.7,s*.65);g.lineTo(-s*.35,0);g.lineTo(-s*.7,-s*.65);g.closePath();g.fill();g.restore();
+}
+
+/* ---------- simulación ---------- */
+function step(dt){
+  clock+=dt;st.time+=dt;
+  // jugador
+  if(keys.gas)st.v+=2.6*dt*(1-st.v/18);else if(keys.brake)st.v-=6.5*dt;
+  st.v=clamp(st.v,0,16.7);
+  const prevS=st.s;st.s+=st.v*dt;ensurePath();
+  const P=sampleAt(st.s),pc=P.pc;
+  rules(dt,pc,prevS);if(st.ended)return;
+  // volante
+  let target=0;if(pc.type==='C'){target=pc.meta.turn==='R'?1:-1;}
+  st.steer+=(target-st.steer)*Math.min(1,dt*4);
+  // taxi que sigue
+  const gap=st.s-st.sF,want=12+st.v*1.1;st.vF=clamp(st.v+(gap-want)*0.9,0,15);st.sF=Math.min(st.sF+st.vF*dt,st.s-6);
+  const F=sampleAt(st.sF);follower.position.set(F.x,0,F.z);follower.rotation.y=Math.atan2(-F.tx,-F.tz);
+  // tráfico
+  const me={x:P.x,z:P.z};st.collCool-=dt;
+  for(const c of ai){const sign=c.ax===0?DIRS[c.d].z:DIRS[c.d].x;let vmax=9;const pos=aiPos(c);
+    for(let k=0;k<N;k++){const un=(k-C)*S,dist=(un-c.u)*sign;if(dist<14||dist>70)continue;const node=c.ax===0?[c.line,k]:[k,c.line],key=nk(...node);
+      if(SIG.has(key)){const ls=lightState(key,c.ax===0?0:1);if(ls==='R'||(ls==='A'&&dist>22))vmax=Math.min(vmax,Math.sqrt(2*3.5*Math.max(0,dist-15)));}
+      else{const np=NP(...node);if(Math.hypot(me.x-np.x,me.z-np.z)<19&&dist<40)vmax=Math.min(vmax,Math.sqrt(2*3.5*Math.max(0,dist-15)));}}
+    for(const o of ai){if(o===c||o.ax!==c.ax||o.line!==c.line||o.d!==c.d)continue;const g=(o.u-c.u)*sign;if(g>0&&g<30)vmax=Math.min(vmax,Math.sqrt(2*3.5*Math.max(0,g-9)));}
+    for(const t of[me,{x:F.x,z:F.z}]){const dx=t.x-pos.x,dz=t.z-pos.z,D=DIRS[c.d],R=RT(c.d);const al=dx*D.x+dz*D.z,lt=dx*R.x+dz*R.z;if(al>0&&al<22&&Math.abs(lt)<2.6)vmax=Math.min(vmax,Math.sqrt(2*3.5*Math.max(0,al-7)));}
+    c.v=c.v<vmax?Math.min(vmax,c.v+2*dt):Math.max(vmax,c.v-7*dt);
+    c.u+=c.v*sign*dt;if(c.u*sign>330)c.u=-330*sign;
+    const np=aiPos(c);c.m.position.set(np.x,0,np.z);c.m.rotation.y=Math.atan2(-DIRS[c.d].x,-DIRS[c.d].z);
+    if(st.collCool<=0&&Math.hypot(np.x-me.x,np.z-me.z)<2.7){penalty('Colisión',30,'Colisión con otro vehículo');st.v=0;st.collCool=4;}
+  }
+  // peatones
+  for(const w of walkers){w.t+=w.v*dt;if(Math.abs(w.t)>22){w.v*=-1;w.t=clamp(w.t,-22,22);}w.ph+=dt*7;
+    w.sp.position.set(w.base.x+w.D.x*w.t,0.15+Math.abs(Math.sin(w.ph))*0.05,w.base.z+w.D.z*w.t);}
+  for(const c of crossers){c.t+=dt;const D=DIRS[c.d],R=RT(c.d),p=NP(...c.B);
+    if(c.state==='wait'){if(c.t>0.6)c.state='cross';}
+    else if(c.state==='cross'){c.lat-=1.35*dt;if(c.lat<-10.2){c.state='leave';c.t=0;}}
+    else c.t+=0;
+    let x=p.x-D.x*9.6+R.x*c.lat,z=p.z-D.z*9.6+R.z*c.lat;
+    if(c.state==='leave'){x-=D.x*c.t*1.3;z-=D.z*c.t*1.3;}
+    c.ph+=dt*7;c.sp.position.set(x,(Math.abs(c.lat)>HW?0.15:0)+Math.abs(Math.sin(c.ph))*0.05,z);}
+  crossers=crossers.filter(c=>{if(c.state==='leave'&&c.t>16){scene.remove(c.sp);return false;}return true;});
+  // luces de semáforo
+  SIG.forEach((s,key)=>{for(let ax=0;ax<2;ax++){const ls=lightState(key,ax),on=ls==='R'?0:ls==='A'?1:2;for(let c=0;c<3;c++)s.lamps[ax][c].material=c===on?LAMP_ON[c]:LAMP_DIM[c];}});
+  pin.position.y=7+Math.sin(clock*2)*0.4;
+}
+
+function placeCameras(){const P=sampleAt(st.s);const rx=-P.tz,rz=P.tx;const yaw=Math.atan2(-P.tx,-P.tz);
+  const bob=st.v>0.5?Math.sin(st.time*9)*0.012*Math.min(1,st.v/8):0;
+  camMain.position.set(P.x-rx*0.42,1.32+bob,P.z-rz*0.42);camMain.rotation.set(-0.085,yaw,-st.steer*0.02);
+  for(const M of MIRRORS){if(M.side===0){M.cam.position.set(P.x-rx*0.05+P.tx*0.5,M.h,P.z-rz*0.05+P.tz*0.5);}
+    else{M.cam.position.set(P.x+rx*1.02*M.side+P.tx*0.7,M.h,P.z+rz*1.02*M.side+P.tz*0.7);}
+    M.cam.rotation.set(-0.025,yaw+Math.PI+M.yawOff,0);}}
+
+function render(){if(!W)return;placeCameras();
+  renderer.setRenderTarget(null);renderer.render(scene,camMain);
+  for(const M of MIRRORS){renderer.setRenderTarget(M.rt);renderer.render(scene,M.cam);}
+  renderer.setRenderTarget(null);renderer.autoClear=false;renderer.render(ovScene,ovCam);renderer.autoClear=true;}
+
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(st.running&&!st.paused&&!st.ended){step(dt);updateDash(dt);}
+  render();requestAnimationFrame(loop);}
+
+/* ---------- LMS (SCORM 1.2 / 2004) ---------- */
+const LMS=(()=>{let h=null;
+  function find(w){let n=0;try{while(w&&n<12){if(w.API_1484_11)return{v:2004,api:w.API_1484_11};if(w.API)return{v:12,api:w.API};if(w.parent===w)break;w=w.parent;n++;}}catch(e){}return null;}
+  try{h=find(window)||(window.opener?find(window.opener):null);}catch(e){h=null;}
+  let inited=false;
+  return{ok:()=>!!h,
+    init(){if(!h||inited)return;try{h.v===2004?h.api.Initialize(''):h.api.LMSInitialize('');inited=true;}catch(e){}},
+    report(score,passed){if(!h)return false;try{this.init();const a=h.api;
+      if(h.v===2004){a.SetValue('cmi.score.raw',String(score));a.SetValue('cmi.score.min','0');a.SetValue('cmi.score.max','100');a.SetValue('cmi.score.scaled',String(score/100));a.SetValue('cmi.success_status',passed?'passed':'failed');a.SetValue('cmi.completion_status','completed');a.Commit('');}
+      else{a.LMSSetValue('cmi.core.score.raw',String(score));a.LMSSetValue('cmi.core.score.min','0');a.LMSSetValue('cmi.core.score.max','100');a.LMSSetValue('cmi.core.lesson_status',passed?'passed':'failed');a.LMSCommit('');}
+      return true;}catch(e){return false;}}};})();
+
+function finish(){st.ended=true;st.running=false;keys.gas=keys.brake=false;setBanner(null);
+  const passed=st.score>=70;$('finalScore').textContent=st.score;const v=$('verdict');v.textContent=passed?'Aprobado':'Repasar';v.className='verdict '+(passed?'ok':'no');
+  const mm=Math.floor(st.time/60),ss=Math.round(st.time%60);$('finalTime').textContent=`${mm}:${String(ss).padStart(2,'0')} min`;
+  const ul=$('finalList');ul.innerHTML='';const entries=Object.entries(st.log);
+  if(!entries.length){const li=document.createElement('li');li.innerHTML='<span>Sin eventos registrados</span><span></span>';ul.appendChild(li);}
+  entries.sort((a,b)=>a[1].pts-b[1].pts).forEach(([k,o])=>{const li=document.createElement('li');const a=document.createElement('span'),b=document.createElement('span');a.textContent=k+(o.n>1?' ×'+o.n:'');b.textContent=o.pts?o.pts+' pts':'✓';li.append(a,b);ul.appendChild(li);});
+  LMS.report(st.score,passed);
+  $('endScreen').hidden=false;$('againBtn').focus();}
+
+/* ---------- entradas ---------- */
+function start(){reset();$('startScreen').hidden=true;$('endScreen').hidden=true;st.running=true;st.paused=false;LMS.init();stage.focus();}
+function setPause(p){if(!st.running)return;st.paused=p;$('pauseScreen').hidden=!p;keys.gas=keys.brake=false;if(!p)stage.focus();}
+$('startBtn').onclick=start;$('againBtn').onclick=start;$('resumeBtn').onclick=()=>setPause(false);
+$('bPause').onclick=()=>setPause(!st.paused);
+$('bL').onclick=()=>toggleTurn('L');$('bR').onclick=()=>toggleTurn('R');
+function hold(id,k){const b=$(id);const on=e=>{e.preventDefault();keys[k]=true;b.classList.add('on');};const off=()=>{keys[k]=false;b.classList.remove('on');};
+  b.addEventListener('pointerdown',on);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,off));}
+hold('bGas','gas');hold('bBrake','brake');
+window.addEventListener('keydown',e=>{const k=e.key;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(k))e.preventDefault();
+  if(k==='ArrowUp'||k==='w'||k==='W')keys.gas=true;
+  else if(k==='ArrowDown'||k==='s'||k==='S')keys.brake=true;
+  else if(!e.repeat&&(k==='ArrowLeft'||k==='a'||k==='A'))toggleTurn('L');
+  else if(!e.repeat&&(k==='ArrowRight'||k==='d'||k==='D'))toggleTurn('R');
+  else if(k==='p'||k==='P'||k==='Escape')setPause(!st.paused);
+  else if(k==='Enter'&&!st.running)start();});
+window.addEventListener('keyup',e=>{const k=e.key;if(k==='ArrowUp'||k==='w'||k==='W')keys.gas=false;if(k==='ArrowDown'||k==='s'||k==='S')keys.brake=false;});
+window.addEventListener('blur',()=>{keys.gas=keys.brake=false;});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&st.running&&!st.paused)setPause(true);});
+
+reset();resize();updateDash(0.2);requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>

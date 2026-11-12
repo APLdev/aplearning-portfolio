@@ -1,5 +1,16 @@
 export const demos = [
   {
+    slug: "ruta-segura",
+    title: { es: "Ruta segura", en: "Ruta segura · Safe driving" },
+    type: { es: "Simulador de conducción", en: "Driving simulator" },
+    description: {
+      es: "Recorre las calles de Lima, sigue el GPS y practica una conducción segura respetando señales, peatones y límites de velocidad.",
+      en: "Drive through Lima, follow the GPS and practise safe driving while respecting traffic signs, pedestrians and speed limits.",
+    },
+    scope: { es: "Ruta interactiva · Controles de manejo · En español", en: "Interactive route · Driving controls · Spanish only" },
+    src: { es: "/projects/ruta-segura/demo.html", en: "/projects/ruta-segura/demo.html" },
+  },
+  {
     slug: "diversidad",
     title: { es: "Diversidad, equidad e inclusión", en: "Diversity, equity and inclusion" },
     type: { es: "Curso interactivo", en: "Interactive course" },
