@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { DemoGallery } from "@/components/DemoGallery";
 
 export const metadata: Metadata = {
-  title: "Demos interactivas | APLearning",
-  description: "Prueba cursos interactivos, retos gamificados y simuladores de APLearning: Ruta segura, Diversidad y Ojo Experto.",
+  title: "Demos de cursos interactivos y simuladores",
+  description:
+    "Prueba mis demos de capacitación para empresas: un simulador de conducción, un curso de diversidad e inclusión y un reto gamificado de seguridad laboral.",
 };
 
 export default function DemosPage() {

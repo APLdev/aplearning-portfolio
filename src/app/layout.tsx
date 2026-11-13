@@ -20,9 +20,12 @@ export const metadata: Metadata = {
   verification: {
     google: "w8ufNFGy5DsU8-JS3OdCmqBv3b4TdRkDiI38pz6-E6M",
   },
-  title: "APLearning — Cursos e-learning para empresas",
+  title: {
+    default: "Cursos e-learning y SCORM para empresas | APLearning",
+    template: "%s | APLearning",
+  },
   description:
-    "Convierto documentos, manuales y presentaciones corporativas en cursos e-learning interactivos listos para tu LMS.",
+    "Transformo manuales, presentaciones y videos en cursos e-learning interactivos para empresas, con diseño a medida, locución y entrega SCORM lista para tu LMS.",
 };
 
 export default function RootLayout({

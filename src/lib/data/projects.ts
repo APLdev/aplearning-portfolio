@@ -12,6 +12,10 @@ export interface ProjectImage {
 
 export interface ProjectMeta {
   slug: string;
+  seo: {
+    title: string;
+    description: string;
+  };
   tech: string[];
   accent: Accent;
   mockup: MockupVariant;
@@ -31,6 +35,11 @@ export interface ProjectMeta {
 export const projectsMeta: ProjectMeta[] = [
   {
     slug: "diversidad-equidad-inclusion",
+    seo: {
+      title: "Curso interactivo de diversidad, equidad e inclusión",
+      description:
+        "Explora una demo de curso sobre diversidad, equidad e inclusión, con ilustraciones interactivas y actividades para practicar situaciones cotidianas.",
+    },
     tech: ["HTML5", "CSS / JavaScript", "SVG interactivo"],
     accent: "violet",
     mockup: 4,
@@ -46,6 +55,11 @@ export const projectsMeta: ProjectMeta[] = [
   },
   {
     slug: "seguridad-vial-banrep",
+    seo: {
+      title: "Curso de seguridad vial para Banrep",
+      description:
+        "Conoce el programa de seguridad vial que desarrollé para el Banco de la República: cuatro módulos interactivos con casos prácticos y entrega SCORM.",
+    },
     tech: ["HTML5 interactivo", "SCORM", "CSS/JS a medida"],
     accent: "emerald",
     mockup: 2,
@@ -59,6 +73,11 @@ export const projectsMeta: ProjectMeta[] = [
   },
   {
     slug: "cumplimiento-normativo-mpf",
+    seo: {
+      title: "Curso de compliance para Machu Picchu Foods",
+      description:
+        "Así convertí políticas y documentos de Machu Picchu Foods en un curso de cumplimiento normativo con casos prácticos, locución y canal de denuncias.",
+    },
     tech: ["HTML5 interactivo", "Locución embebida", "JavaScript a medida"],
     accent: "amber",
     mockup: 3,
@@ -71,6 +90,11 @@ export const projectsMeta: ProjectMeta[] = [
   },
   {
     slug: "efecto-wow-sportline",
+    seo: {
+      title: "Curso de atención al cliente para Sportline",
+      description:
+        "Conoce el curso SCORM que desarrollé para Sportline: cinco pasos del modelo Efecto WOW, audios de ejemplo y actividades de atención al cliente en tienda.",
+    },
     tech: ["Storyline 360", "SCORM", "Locución embebida"],
     accent: "indigo",
     mockup: 1,
@@ -83,6 +107,11 @@ export const projectsMeta: ProjectMeta[] = [
   },
   {
     slug: "codigo-etica-mac",
+    seo: {
+      title: "Curso de ética y conducta para Hospitales MAC",
+      description:
+        "Así transformé el Código de Ética y Conducta de Hospitales MAC en un curso interactivo con dilemas éticos, actividades y contenido listo para su LMS.",
+    },
     tech: ["Storyline 360", "SCORM", "Interacciones a medida"],
     accent: "violet",
     mockup: 4,
@@ -95,6 +124,11 @@ export const projectsMeta: ProjectMeta[] = [
   },
   {
     slug: "videos-onboarding-stl",
+    seo: {
+      title: "Videos animados de inducción para STL",
+      description:
+        "Conoce los videos animados de inducción que produje para STL: presentación de la empresa y seguridad en terminal, con ilustración 2D y locución.",
+    },
     tech: ["Video animado 2D", "Ilustración vectorial", "Locución profesional"],
     accent: "amber",
     mockup: 2,
